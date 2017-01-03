@@ -1,0 +1,46 @@
+
+#
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+# sources
+SET( biomedicaldataio_sources
+
+# header files
+    ${PROJECT_SOURCE_DIR}/src/dataio.h
+    ${PROJECT_SOURCE_DIR}/src/biomedicaldataio.h
+
+# source files
+    ${PROJECT_SOURCE_DIR}/src/dataio.cpp
+)
+
+# TIFF
+FIND_PACKAGE( TIFF REQUIRED)
+IF(TIFF_FOUND)
+SET(CMAKE_REQUIRED_LIBRARIES ${TIFF_LIBRARIES})
+INCLUDE_DIRECTORIES(${TIFF_INCLUDE_DIR})
+ENDIF(TIFF_FOUND)
+
+# NIfTI
+FIND_PACKAGE( NIfTI REQUIRED)
+IF(NIfTI_FOUND)
+SET(CMAKE_REQUIRED_LIBRARIES ${NIfTI_LIBRARIES})
+INCLUDE_DIRECTORIES(${NIfTI_INCLUDE_DIR})
+ENDIF(NIfTI_FOUND)
+
+# system settings
+IF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O3 -lm -fopenmp" CACHE STRING "CXX Compiler Flags" FORCE)
+ADD_DEFINITIONS(-DUse_OpenMP)
+ENDIF()
+
+IF(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O3" CACHE STRING "CXX Compiler Flags" FORCE)
+SET(CMAKE_MACOSX_RPATH 1)
+ENDIF()
+
+# biomedicaldataio library
+ADD_LIBRARY(biomedicaldataio ${biomedicaldataio_sources})
+TARGET_LINK_LIBRARIES(biomedicaldataio ${TIFF_LIBRARIES} ${NIfTI_LIBRARIES})
+SET(BioMedicalDataIO_LIBRARY biomedicaldataio CACHE STRING "" FORCE)
+ADD_DEPENDENCIES(biomedicaldataio tiff nifti)
+
