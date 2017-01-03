@@ -1,11 +1,11 @@
 // dataio.h
-// read/write .tif, ...
+// read/write .tif, .nii, .raw, ...
 // developed by Yang Yu (gnayuy@gmail.com)
 
 #ifndef __DATAIO_H__
 #define __DATAIO_H__
 
-#include "image.hpp"
+#include "biomedicaldataio.h"
 
 //
 extern "C" {
@@ -21,17 +21,6 @@ extern "C" {
 #ifdef Use_OpenMP
 #include <omp.h>
 #endif
-
-// types
-typedef enum { UNKNOWNDATATYPE, UCHAR, CHAR, USHORT, SHORT, UINT, INT, ULONG, LONG, FLOAT, DOUBLE } DataType;
-
-typedef enum { UNKNOWNPIXELTYPE, SCALAR, RGB, RGBA, OFFSET, VECTOR,
-    POINT, COVARIANTVECTOR, SYMMETRICSECONDRANKTENSOR,
-    DIFFUSIONTENSOR3D, COMPLEX, FIXEDARRAY, MATRIX }  IOPixelType;
-
-typedef enum { UNKNOWNFILEFORMAT, TIFFIMAGE, VDBIMAGE, RLEIMAGE } IOFileFormat;
-
-typedef enum { NoCompression, PackBits, JPEG, Deflate, LZW } CompressionType;
 
 //
 template <class Tdata, class Tidx>
@@ -105,33 +94,8 @@ int convertImageOrder(Tdata *&p, Tidx dimx, Tidx dimy, Tidx dimz, Tidx dimc, boo
     return 0;
 }
 
-template <class T>
-bool checkFileExtension(T* filename, const T* extension)
-{
-    if(filename == NULL || extension == NULL)
-        return false;
-    
-    if(strlen(filename) == 0 || strlen(extension) == 0)
-        return false;
-    
-    if(strchr(filename, '.') == NULL || strchr(extension, '.') == NULL)
-        return false;
-    
-    for(unsigned int i = 0; i < strlen(filename); i++)
-    {
-        if(tolower(filename[strlen(filename) - i - 1]) == tolower(extension[strlen(extension) - i - 1]))
-        {
-            if(i == strlen(extension) - 1)
-                return true;
-        } else
-            break;
-    }
-    
-    return false;
-}
-
-// TIFF image I/O class
-class TiffIO
+// TIFF
+class TiffIO : public BioMedicalDataIO
 {
 public:
     TiffIO();
@@ -152,53 +116,6 @@ public:
     
     //
     void changeImageOrder(bool io);
-    
-    // filename
-    char* getFileName();
-    void setFileName(char* fileName);
-    
-    // dimensions
-    long getDimX();
-    long getDimY();
-    long getDimZ();
-    long getDimC();
-    long getDimT();
-    
-    void setDimX(long x);
-    void setDimY(long y);
-    void setDimZ(long z);
-    void setDimC(long c);
-    void setDimT(long t);
-    
-    // resolutions
-    float getResX();
-    float getResY();
-    float getResZ();
-
-    void setResX(float resolution_x);
-    void setResY(float resolution_y);
-    void setResZ(float resolution_z);
-    
-    // datatype
-    int getDataType();
-    void setDataType(int dt);
-    
-    // data
-    void* getData();
-    void setData(void *p);
-    
-public:
-    string inputFileName,outputFileName;
-    
-    IOFileFormat m_FileFormat;
-    DataType m_DataType;
-    IOPixelType m_PixelType;
-    
-    long dimx, dimy, dimz, dimc, dimt; // dimensions
-    float resx, resy, resz, resc, rest; // spacing
-    
-    void *m_Data;
-    char* m_FileName;
     
 private:
     uint16 config;
@@ -268,6 +185,44 @@ private:
     
     //
     TIFF* m_TiffImage;
+};
+
+// NIfTI
+class NiftiIO : public BioMedicalDataIO
+{
+
+public:
+    NiftiIO();
+    ~NiftiIO();
+
+public:
+
+    // reading
+    bool canReadFile(char *fileNameToRead);
+    int read();
+
+    // writing
+    bool canWriteFile(char *fileNameToWrite);
+    int write();
+    int write(const void *buffer, long sx, long sy, long sz, long sc, long st, int datatype, float srx, float sry, float srz);
+
+    // compressed ?
+    int isCompressed(const char * filename);
+
+private:
+    bool mustRescale();
+    void setPixelType(IOPixelType pt);
+
+private:
+    znzFile m_GZFile;
+    nifti_image *m_NiftiImage;
+
+    double m_RescaleSlope;
+    double m_RescaleIntercept;
+
+    bool m_LegacyAnalyze75Mode;
+
+    IOPixelType m_PixelType;
 };
 
 #endif // __DATAIO_H__

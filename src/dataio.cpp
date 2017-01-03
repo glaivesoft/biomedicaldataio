@@ -1,11 +1,354 @@
 // dataio.cpp
-// read/write .tif, ...
+// read/write .tif, .nii, .raw, ...
 // developed by Yang Yu (gnayuy@gmail.com)
 
 #include "dataio.h"
 
-// tiff
-TiffIO::TiffIO()
+//
+// BioMedicalDataIO
+//
+BioMedicalDataIO::BioMedicalDataIO()
+{
+    inputFileName.clear();
+    outputFileName.clear();
+    m_Data=NULL;
+
+    m_PixelType = UNKNOWNPIXELTYPE;
+    m_DataType = UNKNOWNDATATYPE;
+    m_FileFormat = UNKNOWNFILEFORMAT;
+}
+
+BioMedicalDataIO::~BioMedicalDataIO()
+{
+}
+
+bool BioMedicalDataIO::checkFileExtension(char* filename, const char* extension)
+{
+    if(filename == NULL || extension == NULL)
+        return false;
+
+    if(strlen(filename) == 0 || strlen(extension) == 0)
+        return false;
+
+    if(strchr(filename, '.') == NULL || strchr(extension, '.') == NULL)
+        return false;
+
+    for(unsigned int i = 0; i < strlen(filename); i++)
+    {
+        if(tolower(filename[strlen(filename) - i - 1]) == tolower(extension[strlen(extension) - i - 1]))
+        {
+            if(i == strlen(extension) - 1)
+                return true;
+        } else
+            break;
+    }
+
+    return false;
+}
+
+bool BioMedicalDataIO::checkFileFormat(char* filename)
+{
+    if(checkFileExtension(filename, ".tif"))
+    {
+        m_FileFormat = TIFFFormat;
+    }
+    else if(checkFileExtension(filename, ".nii") || checkFileExtension(filename, ".nii.gz"))
+    {
+        m_FileFormat = NIFTIFormat;
+    }
+    else if(checkFileExtension(filename, ".h5"))
+    {
+        m_FileFormat = HDF5Format;
+    }
+    else if(checkFileExtension(filename, ".raw"))
+    {
+        m_FileFormat = RAWFormat;
+    }
+    else if(checkFileExtension(filename, ".nrrd"))
+    {
+        m_FileFormat = NRRDFormat;
+    }
+    else
+    {
+        cout<<"Invalid file format"<<endl;
+        return false;
+    }
+
+    return true;
+}
+
+// file names
+char* BioMedicalDataIO::getFileName()
+{
+    return this->m_FileName;
+}
+
+void BioMedicalDataIO::setFileName(char* fileName)
+{
+    if(!fileName)
+    {
+        cout<<"Invalid file name"<<endl;
+        return;
+    }
+
+    new1dp<char, int>(this->m_FileName, strlen(fileName) + 1);
+    strcpy(this->m_FileName,fileName);
+
+    return;
+}
+
+// dimensions
+long BioMedicalDataIO::getDimx()
+{
+    return this->dimx;
+}
+
+long BioMedicalDataIO::getDimy()
+{
+    return this->dimy;
+}
+
+long BioMedicalDataIO::getDimz()
+{
+    return this->dimz;
+}
+
+long BioMedicalDataIO::getDimc()
+{
+    return this->dimc;
+}
+
+long BioMedicalDataIO::getDimt()
+{
+    return this->dimt;
+}
+
+void BioMedicalDataIO::setDimx(long x)
+{
+    if(x<=0)
+    {
+        cout << "invalid x dimension"<<endl;
+    }
+    this->dimx = x;
+}
+
+void BioMedicalDataIO::setDimy(long y)
+{
+    if(y<=0)
+    {
+        cout << "invalid y dimension"<<endl;
+    }
+    this->dimy = y;
+}
+
+void BioMedicalDataIO::setDimz(long z)
+{
+    if(z<=0)
+    {
+        cout << "invalid z dimension"<<endl;
+    }
+    this->dimz = z;
+}
+
+void BioMedicalDataIO::setDimc(long c)
+{
+    if(c<=0)
+    {
+        cout << "invalid c dimension"<<endl;
+    }
+    this->dimc = c;
+}
+
+void BioMedicalDataIO::setDimt(long t)
+{
+    if(t<=0)
+    {
+        cout << "invalid t dimension"<<endl;
+    }
+    this->dimt = t;
+}
+
+float BioMedicalDataIO::getResX()
+{
+    return resx;
+}
+
+float BioMedicalDataIO::getResY()
+{
+    return resy;
+}
+
+float BioMedicalDataIO::getResZ()
+{
+    return resz;
+}
+
+void BioMedicalDataIO::setResX(float resolution_x)
+{
+    if(resolution_x<=0)
+    {
+        cout<<"Invalide x resolution"<<endl;
+        return;
+    }
+    resx = resolution_x;
+    return;
+}
+
+void BioMedicalDataIO::setResY(float resolution_y)
+{
+    if(resolution_y<=0)
+    {
+        cout<<"Invalide y resolution"<<endl;
+        return;
+    }
+    resy = resolution_y;
+    return;
+}
+
+void BioMedicalDataIO::setResZ(float resolution_z)
+{
+    if(resolution_z<=0)
+    {
+        cout<<"Invalide z resolution"<<endl;
+        return;
+    }
+    resz = resolution_z;
+    return;
+}
+
+int BioMedicalDataIO::getDataType()
+{
+    return m_DataType;
+}
+
+void BioMedicalDataIO::setDataType(int dt)
+{
+    this->m_DataType = (DataType)dt;
+}
+
+int BioMedicalDataIO::readData(string filename)
+{
+    inputFileName.assign(filename);
+
+    ifstream in(filename.c_str());
+    if(!in.good())
+    {
+        cout<<"The input file "<<filename<<" does not exist."<<endl;
+        return -1;
+    }
+
+    if(checkFileFormat(const_cast<char *>(filename.c_str())))
+    {
+        if(m_FileFormat==TIFFFormat)
+        {
+            TiffIO tif;
+
+            if(!tif.canReadFile(const_cast<char*>(inputFileName.c_str())))
+            {
+                cout<<"Fail to read TIFF image."<<endl;
+                return -2;
+            }
+            tif.read();
+
+            dimx = tif.getDimx();
+            dimy = tif.getDimy();
+            dimz = tif.getDimz();
+            dimc = tif.getDimc();
+            dimt = tif.getDimt();
+
+            m_DataType = (DataType)tif.getDataType();
+
+            resx = tif.resx;
+            resy = tif.resy;
+            resz = tif.resz;
+        }
+        else if(m_FileFormat==NIFTIFormat)
+        {
+            NiftiIO nii;
+
+            if(!nii.canReadFile(const_cast<char*>(inputFileName.c_str())))
+            {
+                cout<<"Fail to read Nifti image."<<endl;
+                return -2;
+            }
+            nii.read();
+
+            dimx = nii.getDimx();
+            dimy = nii.getDimy();
+            dimz = nii.getDimz();
+            dimc = nii.getDimc();
+            dimt = nii.getDimt();
+
+            m_DataType = (DataType)nii.getDataType();
+
+            resx = nii.resx;
+            resy = nii.resy;
+            resz = nii.resz;
+        }
+        else
+        {
+            cout<<"Unsupported Data Formats."<<endl;
+            return -1;
+        }
+    }
+
+    //
+    return 0;
+}
+
+int BioMedicalDataIO::writeData(string filename)
+{
+    outputFileName.assign(filename);
+
+    if(m_Data)
+    {
+        if(checkFileFormat(const_cast<char *>(filename.c_str())))
+        {
+            if(m_FileFormat==TIFFFormat)
+            {
+                TiffIO tif;
+
+                if(!tif.canWriteFile(const_cast<char*>(outputFileName.c_str())))
+                {
+                    cout<<"Fail to write TIFF image."<<endl;
+                    return -2;
+                }
+                tif.write();
+
+            }
+            else if(m_FileFormat==NIFTIFormat)
+            {
+                NiftiIO nii;
+
+                if(!nii.canWriteFile(const_cast<char*>(outputFileName.c_str())))
+                {
+                    cout<<"Fail to write Nifti image."<<endl;
+                    return -2;
+                }
+                nii.write();
+            }
+            else
+            {
+                cout<<"Unsupported Image Formats."<<endl;
+                return -1;
+            }
+        }
+
+    }
+    else
+    {
+        cout<<"Empty data!"<<endl;
+        return -1;
+    }
+
+    //
+    return 0;
+}
+
+//
+// TIFFIO
+//
+TiffIO::TiffIO() : BioMedicalDataIO()
 {
     // supported file suffix
     // .tif
@@ -13,7 +356,13 @@ TiffIO::TiffIO()
     m_TiffImage = NULL;
     this->m_FileName = NULL;
     
+    inputFileName.clear();
+    outputFileName.clear();
+    m_Data=NULL;
+
+    m_PixelType = UNKNOWNPIXELTYPE;
     m_DataType = UNKNOWNDATATYPE;
+    m_FileFormat = UNKNOWNFILEFORMAT;
     
     config = (uint16) -1;
     width = (uint32) 0;
@@ -55,167 +404,6 @@ TiffIO::TiffIO()
 TiffIO::~TiffIO()
 {
     close();
-}
-
-// file names
-char* TiffIO::getFileName()
-{
-    return this->m_FileName;
-}
-
-void TiffIO::setFileName(char* fileName)
-{
-    if(!fileName)
-    {
-        cout<<"Invalid file name"<<endl;
-        return;
-    }
-
-    if(!this->m_FileName || strcmp (this->m_FileName,fileName) != 0)
-    {
-        new1dp<char, int>(this->m_FileName, strlen(fileName) + 1);
-        strcpy(this->m_FileName,fileName);
-    }
-    
-    return;
-}
-
-// dimensions
-long TiffIO::getDimX()
-{
-    return this->dimx;
-}
-
-long TiffIO::getDimY()
-{
-    return this->dimy;
-}
-
-long TiffIO::getDimZ()
-{
-    return this->dimz;
-}
-
-long TiffIO::getDimC()
-{
-    return this->dimc;
-}
-
-long TiffIO::getDimT()
-{
-    return this->dimt;
-}
-
-void TiffIO::setDimX(long x)
-{
-    if(x<=0)
-    {
-        cout << "invalid x dimension"<<endl;
-    }
-    this->dimx = x;
-}
-
-void TiffIO::setDimY(long y)
-{
-    if(y<=0)
-    {
-        cout << "invalid y dimension"<<endl;
-    }
-    this->dimy = y;
-}
-
-void TiffIO::setDimZ(long z)
-{
-    if(z<=0)
-    {
-        cout << "invalid z dimension"<<endl;
-    }
-    this->dimz = z;
-}
-
-void TiffIO::setDimC(long c)
-{
-    if(c<=0)
-    {
-        cout << "invalid c dimension"<<endl;
-    }
-    this->dimc = c;
-}
-
-void TiffIO::setDimT(long t)
-{
-    if(t<=0)
-    {
-        cout << "invalid t dimension"<<endl;
-    }
-    this->dimt = t;
-}
-
-float TiffIO::getResX()
-{
-    return resx;
-}
-
-float TiffIO::getResY()
-{
-    return resy;
-}
-
-float TiffIO::getResZ()
-{
-    return resz;
-}
-
-void TiffIO::setResX(float resolution_x)
-{
-    if(resolution_x<=0)
-    {
-        cout<<"Invalide x resolution"<<endl;
-        return;
-    }
-    resx = resolution_x;
-    return;
-}
-
-void TiffIO::setResY(float resolution_y)
-{
-    if(resolution_y<=0)
-    {
-        cout<<"Invalide y resolution"<<endl;
-        return;
-    }
-    resy = resolution_y;
-    return;
-}
-
-void TiffIO::setResZ(float resolution_z)
-{
-    if(resolution_z<=0)
-    {
-        cout<<"Invalide z resolution"<<endl;
-        return;
-    }
-    resz = resolution_z;
-    return;
-}
-
-int TiffIO::getDataType()
-{
-    return m_DataType;
-}
-
-void TiffIO::setDataType(int dt)
-{
-    this->m_DataType = (DataType)dt;
-}
-
-void* TiffIO::getData()
-{
-    return m_Data;
-}
-void TiffIO::setData(void *p)
-{
-    m_Data = p;
 }
 
 void TiffIO::close()
@@ -1229,3 +1417,724 @@ int TiffIO::write()
     return 0;
 }
 
+//
+// NiftiIO
+//
+
+NiftiIO::NiftiIO() : BioMedicalDataIO()
+{
+    // supported file suffix
+    // .nia .nii .nii.gz
+    // .hdr .img .img.gz
+
+    m_NiftiImage = NULL;
+
+    m_FileName = NULL;
+    inputFileName.clear();
+    outputFileName.clear();
+    m_Data=NULL;
+
+    m_PixelType = UNKNOWNPIXELTYPE;
+    m_DataType = UNKNOWNDATATYPE;
+    m_FileFormat = UNKNOWNFILEFORMAT;
+
+    m_LegacyAnalyze75Mode = true;
+
+    m_RescaleIntercept = 0.0;
+    m_RescaleSlope = 1.0;
+
+    dimx = 1;
+    dimy = 1;
+    dimz = 1;
+    dimc = 1;
+    dimt = 1;
+
+    resx = 1.0;
+    resy = 1.0;
+    resz = 1.0;
+    resc = 1.0;
+    rest = 1.0;
+}
+
+NiftiIO::~NiftiIO()
+{
+    nifti_image_free(this->m_NiftiImage);
+}
+
+//
+bool NiftiIO::mustRescale()
+{
+    return y_abs<double>(this->m_RescaleSlope) > numeric_limits< double >::epsilon()
+            && ( y_abs<double>(this->m_RescaleSlope - 1.0) > numeric_limits< double >::epsilon()
+                 || y_abs<double>(this->m_RescaleIntercept) > numeric_limits< double >::epsilon() );
+}
+
+void NiftiIO::setPixelType(IOPixelType pt)
+{
+    this->m_PixelType = pt;
+}
+
+//
+int NiftiIO::isCompressed(const char * filename)
+{
+    const char *tempextension = nifti_find_file_extension( filename );
+    if ( tempextension == NULL )
+    {
+        cout << "Bad Nifti file name. No extension found for file: " << this->getFileName() << endl;
+    }
+    const std::string ExtensionName(tempextension);
+
+    const std::string::size_type ext = ExtensionName.rfind(".gz");
+    int iscompressed = ( ext == std::string::npos ) ? 0 : 1;
+
+    return iscompressed;
+}
+
+// reading
+bool NiftiIO::canReadFile(char *fileNameToRead)
+{
+    setFileName(fileNameToRead);
+
+    // is_nifti_file returns
+    //       > 0 for a nifti file
+    //      == 0 for an analyze file,
+    //       < 0 for an error,
+
+    const char * filename = reinterpret_cast<const char *>(fileNameToRead);
+
+    const int image_FTYPE = is_nifti_file(filename);
+
+    if ( image_FTYPE > 0 )
+    {
+        return true;
+    }
+    else if (image_FTYPE == 0)
+    {
+        this->m_LegacyAnalyze75Mode=true;
+        return true;
+    }
+
+    /* image_FTYPE < 0 */
+    return false;
+}
+
+int NiftiIO::read()
+{
+    const char * filename = reinterpret_cast<const char *>(this->getFileName());
+    m_GZFile = znzopen(filename, "rb", isCompressed(filename));
+    if (znz_isnull(m_GZFile))
+    {
+        cout << "Error: failed to read file " << filename << endl;
+        return -1;
+    }
+
+    this->m_NiftiImage = nifti_image_read(filename, 1);
+
+    static std::string prev;
+    if ( prev != this->getFileName() )
+    {
+        prev = this->getFileName();
+    }
+    if ( this->m_NiftiImage == 0 )
+    {
+        cout << this->getFileName() << " is not recognized as a NIFTI file!" <<endl;
+        return -1;
+    }
+
+    //Check the intent code, it is a vector image, or matrix image, then this is not true.
+    int dims = 0;
+
+    cout<<"test ... ndim "<<this->m_NiftiImage->ndim<<endl;
+
+    if ( this->m_NiftiImage->intent_code == NIFTI_INTENT_VECTOR || this->m_NiftiImage->intent_code == NIFTI_INTENT_SYMMATRIX )
+    {
+        dimc = this->m_NiftiImage->dim[5];
+
+        if(this->m_NiftiImage->dim[5] > 1)
+        {
+            dims = 5;
+        }
+        else if ( this->m_NiftiImage->dim[4] > 1 )
+        {
+            dims = 4;
+        }
+        else if ( this->m_NiftiImage->dim[3] > 1 )
+        {
+            dims = 3;
+        }
+        else if ( this->m_NiftiImage->dim[2] > 1 )
+        {
+            dims = 2;
+        }
+        else
+        {
+            dims = 1;
+        }
+    }
+    else if ( this->m_NiftiImage->intent_code == NIFTI_INTENT_GENMATRIX )
+    {
+        //TODO:  NEED TO DEAL WITH CASE WHERE NIFTI_INTENT_MATRIX
+        cout<< this->getFileName() << " has an intent code of NIFTI_INTENT_GENMATRIX which is not yet implemented in ITK" <<endl;
+        return -1;
+    }
+    else
+    {
+        cout<<"Simple Scalar Image"<<endl;
+
+        // Simple Scalar Image
+        //
+        // Apparently some straight-from-the-scanner files report as 4D
+        // with T = 1; this causes ImageFileReader to erroneously ignore the
+        // reported
+        // direction cosines.
+        unsigned floatdim;
+        for ( floatdim = this->m_NiftiImage->dim[0];
+              this->m_NiftiImage->dim[floatdim] == 1 && floatdim > 3;
+              floatdim-- )
+        {}
+        dims = floatdim;
+        this->dimc = 1;
+    }
+
+    cout<<"dims ... "<<dims<<" dimt ... "<<this->m_NiftiImage->nt<<endl;
+
+    switch ( this->m_NiftiImage->datatype )
+    {
+    case NIFTI_TYPE_INT8:
+        this->m_DataType = CHAR;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_UINT8:
+        this->m_DataType = UCHAR;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_INT16:
+        this->m_DataType = SHORT;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_UINT16:
+        this->m_DataType = USHORT;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_INT32:
+        this->m_DataType = INT;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_UINT32:
+        this->m_DataType = UINT;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_FLOAT32:
+        this->m_DataType = FLOAT;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_FLOAT64:
+        this->m_DataType = DOUBLE;
+        this->m_PixelType = SCALAR;
+        break;
+    case NIFTI_TYPE_COMPLEX64:
+        this->m_DataType = FLOAT;
+        this->m_PixelType = COMPLEX;
+        this->dimc = 2;
+        break;
+    case NIFTI_TYPE_COMPLEX128:
+        this->m_DataType = DOUBLE;
+        this->m_PixelType = COMPLEX;
+        this->dimc = 2;
+        break;
+    case NIFTI_TYPE_RGB24:
+        this->m_DataType = UCHAR;
+        this->m_PixelType = RGB;
+        this->dimc = 3;
+        break;
+    case NIFTI_TYPE_RGBA32:
+        this->m_DataType = UCHAR;
+        this->m_PixelType = RGBA;
+        this->dimc = 4;
+        break;
+    default:
+        break;
+    }
+
+    // there are a wide variety of intents we ignore
+    // but a few wee need to care about
+    switch ( this->m_NiftiImage->intent_code )
+    {
+    case NIFTI_INTENT_NONE:
+        break;
+    case NIFTI_INTENT_CORREL:
+        break;
+    case NIFTI_INTENT_TTEST:
+        break;
+    case NIFTI_INTENT_FTEST:
+        break;
+    case NIFTI_INTENT_ZSCORE:
+        break;
+    case NIFTI_INTENT_CHISQ:
+        break;
+    case NIFTI_INTENT_BETA:
+        break;
+    case NIFTI_INTENT_BINOM:
+        break;
+    case NIFTI_INTENT_GAMMA:
+        break;
+    case NIFTI_INTENT_POISSON:
+        break;
+    case NIFTI_INTENT_NORMAL:
+        break;
+    case NIFTI_INTENT_FTEST_NONC:
+        break;
+    case NIFTI_INTENT_CHISQ_NONC:
+        break;
+    case NIFTI_INTENT_LOGISTIC:
+        break;
+    case NIFTI_INTENT_LAPLACE:
+        break;
+    case NIFTI_INTENT_UNIFORM:
+        break;
+    case NIFTI_INTENT_TTEST_NONC:
+        break;
+    case NIFTI_INTENT_WEIBULL:
+        break;
+    case NIFTI_INTENT_CHI:
+        break;
+    case NIFTI_INTENT_INVGAUSS:
+        break;
+    case NIFTI_INTENT_EXTVAL:
+        break;
+    case NIFTI_INTENT_PVAL:
+        break;
+    case NIFTI_INTENT_LOGPVAL:
+        break;
+    case NIFTI_INTENT_LOG10PVAL:
+        break;
+    case NIFTI_INTENT_ESTIMATE:
+        break;
+    case NIFTI_INTENT_LABEL:
+        break;
+    case NIFTI_INTENT_NEURONAME:
+        break;
+    case NIFTI_INTENT_GENMATRIX:
+        break;
+    case NIFTI_INTENT_SYMMATRIX:
+        this->setPixelType(SYMMETRICSECONDRANKTENSOR);
+        break;
+    case NIFTI_INTENT_DISPVECT:
+        break;
+    case NIFTI_INTENT_VECTOR:
+        this->setPixelType(VECTOR);
+        break;
+    case NIFTI_INTENT_POINTSET:
+        break;
+    case NIFTI_INTENT_TRIANGLE:
+        break;
+    case NIFTI_INTENT_QUATERNION:
+        break;
+    case NIFTI_INTENT_DIMLESS:
+        break;
+    case NIFTI_INTENT_TIME_SERIES:
+        break;
+    case NIFTI_INTENT_NODE_INDEX:
+        break;
+    case NIFTI_INTENT_RGB_VECTOR:
+        break;
+    case NIFTI_INTENT_RGBA_VECTOR:
+        break;
+    case NIFTI_INTENT_SHAPE:
+        break;
+    }
+    // set slope/intercept
+    if ( this->m_NiftiImage->qform_code == 0 && this->m_NiftiImage->sform_code == 0 )
+    {
+        this->m_RescaleSlope = 1;
+        this->m_RescaleIntercept = 0;
+    }
+    else
+    {
+        if ( ( this->m_RescaleSlope = this->m_NiftiImage->scl_slope ) == 0 )
+        {
+            this->m_RescaleSlope = 1;
+        }
+        this->m_RescaleIntercept = this->m_NiftiImage->scl_inter;
+    }
+
+    //
+    // if rescale is necessary, promote type reported
+    // to ImageFileReader to float
+    if ( this->mustRescale() )
+    {
+        if ( this->m_DataType == CHAR
+             || this->m_DataType == UCHAR
+             || this->m_DataType == SHORT
+             || this->m_DataType == USHORT
+             || this->m_DataType == INT
+             || this->m_DataType == UINT
+             || this->m_DataType == LONG
+             || this->m_DataType == ULONG )
+        {
+            this->m_DataType = FLOAT;
+        }
+    }
+    //
+    // set up the dimension stuff
+    double spacingscale = 1.0; //default to mm
+    switch ( XYZT_TO_SPACE(this->m_NiftiImage->xyz_units) )
+    {
+    case NIFTI_UNITS_METER:
+        spacingscale = 1e3;
+        break;
+    case NIFTI_UNITS_MM:
+        spacingscale = 1e0;
+        break;
+    case NIFTI_UNITS_MICRON:
+        spacingscale = 1e-3;
+        break;
+    }
+
+    double timingscale = 1.0; //Default to seconds
+    switch ( XYZT_TO_TIME(this->m_NiftiImage->xyz_units) )
+    {
+    case NIFTI_UNITS_SEC:
+        timingscale = 1.0;
+        break;
+    case NIFTI_UNITS_MSEC:
+        timingscale = 1e-3;
+        break;
+    case NIFTI_UNITS_USEC:
+        timingscale = 1e-6;
+        break;
+    }
+
+    switch ( dims )
+    {
+    case 7:
+        //this->SetDimensions(6, this->m_NiftiImage->nw);
+        //this->SetSpacing(6, this->m_NiftiImage->dw);
+    case 6:
+        //this->SetDimensions(5, this->m_NiftiImage->nv);
+        //this->SetSpacing(5, this->m_NiftiImage->dv);
+    case 5:
+        this->setDimc(this->m_NiftiImage->nu);
+        this->resc = this->m_NiftiImage->du;
+    case 4:
+        this->setDimt(this->m_NiftiImage->nt);
+        this->rest = this->m_NiftiImage->dt * timingscale;
+    case 3:
+        this->setDimz(this->m_NiftiImage->nz);
+        this->resz = this->m_NiftiImage->dz * spacingscale;
+    case 2:
+        this->setDimy(this->m_NiftiImage->ny);
+        this->resy = this->m_NiftiImage->dy * spacingscale;
+    case 1:
+        this->setDimx(this->m_NiftiImage->nx);
+        this->resx = this->m_NiftiImage->dx * spacingscale;
+        break;
+    default:
+        cout << this->getFileName() << " has " << dims << " dimensions, and is not supported or invalid!" <<endl;
+        return -1;
+    }
+
+    // dims = m_NiftiImage->dim[0];
+    // dimx = m_NiftiImage->dim[1] = m_NiftiImage->nx;
+    // dimy = m_NiftiImage->dim[2] = m_NiftiImage->ny;
+    // dimz = m_NiftiImage->dim[3] = m_NiftiImage->nz;
+    // dimt = m_NiftiImage->dim[4] = m_NiftiImage->nt;
+    // dimc = m_NiftiImage->dim[5] = m_NiftiImage->nu; // vector
+
+    //
+    unsigned long pixelSize = this->m_NiftiImage->nbyper;
+    unsigned long imSize = dimx*dimy*dimz*dimc*dimt;
+
+    switch ( this->m_DataType )
+    {
+    case CHAR:
+        new1dp< char, unsigned long >((char*&)m_Data, imSize);
+        break;
+    case UCHAR:
+        new1dp< unsigned char, unsigned long >((unsigned char*&)m_Data, imSize);
+        break;
+    case SHORT:
+        new1dp< short, unsigned long >((short*&)m_Data, imSize);
+        break;
+    case USHORT:
+        new1dp< unsigned short, unsigned long >((unsigned short*&)m_Data, imSize);
+        break;
+    case INT:
+        new1dp< int, unsigned long >((int*&)m_Data, imSize);
+        break;
+    case UINT:
+        new1dp< unsigned int, unsigned long >((unsigned int*&)m_Data, imSize);
+        break;
+    case LONG:
+        new1dp< long, unsigned long >((long*&)m_Data, imSize);
+        break;
+    case ULONG:
+        new1dp< unsigned long, unsigned long >((unsigned long*&)m_Data, imSize);
+        break;
+    case FLOAT:
+        new1dp< float, unsigned long >((float*&)m_Data, imSize);
+        break;
+    case DOUBLE:
+        new1dp< double, unsigned long >((double*&)m_Data, imSize);
+        break;
+    case UNKNOWNDATATYPE:
+        cout << "Bad OnDiskComponentType UNKNOWNDATATYPE" <<endl;
+        return -1;
+    }
+
+    //
+    const char *       niftibuf = reinterpret_cast<const char *>(this->m_NiftiImage->data);
+    char *             p = (char *)m_Data;
+
+    const long rowdist = dimx;
+    const long slicedist = rowdist * dimy;
+    const long volumedist = slicedist * dimz;
+    const long seriesdist = volumedist * dimt;
+    long t,z,y,x,c;
+
+    for ( t = 0; t < dimt; t++ )
+    {
+        for ( z = 0; z < dimz; z++ )
+        {
+            for ( y = 0; y < dimy; y++ )
+            {
+                for ( x = 0; x < dimx; x++ )
+                {
+                    for ( c = 0; c < dimc; c++ )
+                    {
+                        const long nifti_index = ( c * seriesdist + volumedist * t + slicedist * z + rowdist * y + x ) * pixelSize;
+                        const long index =( ( t * volumedist * dimc  + volumedist * c + slicedist * z + rowdist * y + x )  ) * pixelSize;
+
+                        memcpy(p + index, niftibuf + nifti_index, pixelSize);
+                    }
+                }
+            }
+        }
+    }
+
+    //m_Data = (void *)p;
+
+    // de-alloc
+    nifti_image_free(this->m_NiftiImage);
+    this->m_NiftiImage = 0;
+
+    //
+    return 0;
+}
+
+// writing
+bool NiftiIO::canWriteFile(char *fileNameToWrite)
+{
+    const char * filename = reinterpret_cast<const char *>(fileNameToWrite);
+    const int ValidFileNameFound = nifti_is_complete_filename(filename) > 0;
+
+    this->setFileName(fileNameToWrite);
+
+    return ValidFileNameFound;
+}
+
+int NiftiIO::write()
+{
+    return write(m_Data, dimx, dimy, dimz, dimc, dimt, m_DataType, resx, resy, resz);
+}
+
+int NiftiIO::write(const void *buffer, long sx, long sy, long sz, long sc, long st, int datatype, float srx, float sry, float srz)
+{
+    if ( this->m_NiftiImage == 0 )
+    {
+        this->m_NiftiImage = nifti_simple_init_nim();
+    }
+
+    const char * filename = reinterpret_cast<const char *>(this->getFileName());
+    const char *tempextension = nifti_find_file_extension( filename );
+    if ( tempextension == NULL )
+    {
+        cout << "Bad Nifti file name. No extension found for file: " << this->getFileName() <<endl;
+    }
+    const std::string ExtensionName(tempextension);
+
+    const char *tempbasename = nifti_makebasename( filename );
+
+    const std::string::size_type ext = ExtensionName.rfind(".gz");
+    const bool IsCompressed = ( ext == std::string::npos ) ? false : true;
+
+    bool b_nii = false; // hdr/img
+    if ( ExtensionName == ".nii" || ExtensionName == ".nii.gz" )
+    {
+        this->m_NiftiImage->nifti_type = NIFTI_FTYPE_NIFTI1_1;
+        b_nii = true;
+    }
+    else if ( ExtensionName == ".nia" )
+    {
+        this->m_NiftiImage->nifti_type = NIFTI_FTYPE_ASCII;
+    }
+    else if ( ExtensionName == ".hdr" || ExtensionName == ".img" || ExtensionName == ".hdr.gz" || ExtensionName == ".img.gz" )
+    {
+        this->m_NiftiImage->nifti_type = NIFTI_FTYPE_NIFTI1_2;
+        //this->m_NiftiImage->nifti_type = NIFTI_FTYPE_ANALYZE; //NOTE: OREINTATION IS NOT WELL DEFINED IN THIS FORMAT.
+    }
+    else
+    {
+        cout << "Bad Nifti file name: " << this->getFileName() << endl;
+        return -1;
+    }
+    this->m_NiftiImage->fname = nifti_makehdrname(tempbasename, this->m_NiftiImage->nifti_type, false, IsCompressed);
+    this->m_NiftiImage->iname = nifti_makeimgname(tempbasename, this->m_NiftiImage->nifti_type, false, IsCompressed);
+
+    if(this->m_PixelType==VECTOR)
+        this->m_NiftiImage->intent_code = NIFTI_INTENT_VECTOR;
+
+    //
+    this->m_NiftiImage->nx = sx;
+    this->m_NiftiImage->ny = sy;
+    this->m_NiftiImage->nz = sz;
+    this->m_NiftiImage->nt = st;
+    this->m_NiftiImage->nu = sc;
+
+    if(sc>1)
+    {
+        this->m_NiftiImage->nvox = sc;
+        this->m_NiftiImage->ndim = 5;
+    }
+    else if(st>1)
+    {
+        this->m_NiftiImage->nvox = st;
+        this->m_NiftiImage->ndim = 4;
+    }
+    else if (sz>1)
+    {
+        this->m_NiftiImage->nvox = sz;
+        this->m_NiftiImage->ndim = 3;
+    }
+    else if (sy>1)
+    {
+        this->m_NiftiImage->nvox = sy;
+        this->m_NiftiImage->ndim = 2;
+    }
+    else
+    {
+        this->m_NiftiImage->nvox = sx;
+        this->m_NiftiImage->ndim = 1;
+    }
+
+    cout<<" ndim ... "<<this->m_NiftiImage->ndim<<endl;
+
+    //
+    switch ( datatype )
+    {
+    case UCHAR:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_UINT8;
+        this->m_NiftiImage->nbyper = 1;
+        break;
+    case CHAR:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_INT8;
+        this->m_NiftiImage->nbyper = 1;
+        break;
+    case USHORT:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_UINT16;
+        this->m_NiftiImage->nbyper = 2;
+        break;
+    case SHORT:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_INT16;
+        this->m_NiftiImage->nbyper = 2;
+        break;
+    case ULONG:
+    case UINT:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_UINT32;
+        this->m_NiftiImage->nbyper = 4;
+        break;
+    case LONG:
+    case INT:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_INT32;
+        this->m_NiftiImage->nbyper = 4;
+        break;
+    case FLOAT:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_FLOAT32;
+        this->m_NiftiImage->nbyper = 4;
+        break;
+    case DOUBLE:
+        this->m_NiftiImage->datatype = NIFTI_TYPE_FLOAT64;
+        this->m_NiftiImage->nbyper = 8;
+        break;
+    case UNKNOWNDATATYPE:
+    default:
+        cout<< "Nifti image only supports unsigned/signed char, unsigned/signed short, and float."<<endl;
+        return -1;
+    }
+    this->m_NiftiImage->scl_slope = 1.0f;
+    this->m_NiftiImage->scl_inter = 0.0f;
+
+    this->m_NiftiImage->xyz_units = static_cast< int >(NIFTI_UNITS_MICRON | NIFTI_UNITS_SEC);
+    this->m_NiftiImage->pixdim[0] = 0;
+    this->m_NiftiImage->pixdim[1] = this->m_NiftiImage->dx = 1e3*srx; // mm by default
+    this->m_NiftiImage->pixdim[2] = this->m_NiftiImage->dy = 1e3*sry; // mm by default
+    this->m_NiftiImage->pixdim[3] = this->m_NiftiImage->dz = 1e3*srz; // mm by default
+
+    // data
+    unsigned long numVoxels = sx*sy*sz*sc*st;
+    unsigned long buffer_size = numVoxels*(unsigned long)(this->m_NiftiImage->nbyper);
+
+    char *nifti_buf = NULL;
+    new1dp<char,unsigned long>(nifti_buf,buffer_size);
+
+    const char *const buf = reinterpret_cast<const char *>(buffer);
+
+    // nifti_layout[vec][t][z][y][x]
+    const long rowdist = sx;
+    const long slicedist = rowdist * sy;
+    const long volumedist = slicedist * sz;
+    const long seriesdist = volumedist * st;
+    long t,z,y,x,c;
+
+    for ( t = 0; t < st; t++ )
+    {
+        for ( z = 0; z < sz; z++ )
+        {
+            for ( y = 0; y < sy; y++ )
+            {
+                for ( x = 0; x < sx; x++ )
+                {
+                    for ( c = 0; c < sc; c++ )
+                    {
+                        const long nifti_index = ( c * seriesdist + volumedist * t + slicedist * z + rowdist * y + x ) * (long)(m_NiftiImage->nbyper);
+                        const long index =( ( t * volumedist * sc  + volumedist * c + slicedist * z + rowdist * y + x )  ) * (long)(m_NiftiImage->nbyper);
+
+                        memcpy(nifti_buf + nifti_index, buf + index, m_NiftiImage->nbyper);
+                    }
+                }
+            }
+        }
+    }
+
+    //
+    m_GZFile = znzopen(filename, "wb", isCompressed(this->m_NiftiImage->fname));
+    if (znz_isnull(m_GZFile))
+    {
+        cout << "Error: failed to write file " << this->m_NiftiImage->fname << endl;
+        return -1;
+    }
+    else
+    {
+        if(b_nii == 1)
+        {
+            // 0 = do not write data and close (do not open data file)
+            // 1 = write data and close
+            // 2 = do not write data and leave data file open
+            // 3 = write data and leave data file open
+            nifti_image_write_hdr_img2(m_NiftiImage,2,"wb",m_GZFile,NULL);
+            nifti_write_buffer(m_GZFile, nifti_buf, buffer_size);
+        }
+        else
+        {
+            nifti_image_write_hdr_img(m_NiftiImage,0,"wb");
+            nifti_write_buffer(m_GZFile, buf, buffer_size);
+        }
+    }
+    znzclose( m_GZFile );
+
+    // de-alloc
+    del1dp<char>(nifti_buf);
+
+    //
+    return 0;
+}
