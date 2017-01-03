@@ -44,3 +44,6 @@ TARGET_LINK_LIBRARIES(biomedicaldataio ${TIFF_LIBRARIES} ${NIfTI_LIBRARIES})
 SET(BioMedicalDataIO_LIBRARY biomedicaldataio CACHE STRING "" FORCE)
 ADD_DEPENDENCIES(biomedicaldataio tiff nifti)
 
+# install
+INSTALL(TARGETS biomedicaldataio ARCHIVE DESTINATION lib)
+INSTALL(FILES biomedicaldataio.h DESTINATION include)
