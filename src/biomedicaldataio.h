@@ -130,17 +130,17 @@ public:
     void setFileName(char* fileName);
 
     // dimensions
-    long getDimx();
-    long getDimy();
-    long getDimz();
-    long getDimc();
-    long getDimt();
+    long getDimX();
+    long getDimY();
+    long getDimZ();
+    long getDimC();
+    long getDimT();
 
-    void setDimx(long x);
-    void setDimy(long y);
-    void setDimz(long z);
-    void setDimc(long c);
-    void setDimt(long t);
+    void setDimX(long x);
+    void setDimY(long y);
+    void setDimZ(long z);
+    void setDimC(long c);
+    void setDimT(long t);
 
     // resolutions
     float getResX();
@@ -154,6 +154,10 @@ public:
     // datatype
     int getDataType();
     void setDataType(int dt);
+
+    // data
+    void* getData();
+    void setData(void *p);
 
 public:
     string inputFileName,outputFileName;

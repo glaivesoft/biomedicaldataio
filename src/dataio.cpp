@@ -98,32 +98,32 @@ void BioMedicalDataIO::setFileName(char* fileName)
 }
 
 // dimensions
-long BioMedicalDataIO::getDimx()
+long BioMedicalDataIO::getDimX()
 {
     return this->dimx;
 }
 
-long BioMedicalDataIO::getDimy()
+long BioMedicalDataIO::getDimY()
 {
     return this->dimy;
 }
 
-long BioMedicalDataIO::getDimz()
+long BioMedicalDataIO::getDimZ()
 {
     return this->dimz;
 }
 
-long BioMedicalDataIO::getDimc()
+long BioMedicalDataIO::getDimC()
 {
     return this->dimc;
 }
 
-long BioMedicalDataIO::getDimt()
+long BioMedicalDataIO::getDimT()
 {
     return this->dimt;
 }
 
-void BioMedicalDataIO::setDimx(long x)
+void BioMedicalDataIO::setDimX(long x)
 {
     if(x<=0)
     {
@@ -132,7 +132,7 @@ void BioMedicalDataIO::setDimx(long x)
     this->dimx = x;
 }
 
-void BioMedicalDataIO::setDimy(long y)
+void BioMedicalDataIO::setDimY(long y)
 {
     if(y<=0)
     {
@@ -141,7 +141,7 @@ void BioMedicalDataIO::setDimy(long y)
     this->dimy = y;
 }
 
-void BioMedicalDataIO::setDimz(long z)
+void BioMedicalDataIO::setDimZ(long z)
 {
     if(z<=0)
     {
@@ -150,7 +150,7 @@ void BioMedicalDataIO::setDimz(long z)
     this->dimz = z;
 }
 
-void BioMedicalDataIO::setDimc(long c)
+void BioMedicalDataIO::setDimC(long c)
 {
     if(c<=0)
     {
@@ -159,7 +159,7 @@ void BioMedicalDataIO::setDimc(long c)
     this->dimc = c;
 }
 
-void BioMedicalDataIO::setDimt(long t)
+void BioMedicalDataIO::setDimT(long t)
 {
     if(t<=0)
     {
@@ -226,6 +226,15 @@ void BioMedicalDataIO::setDataType(int dt)
     this->m_DataType = (DataType)dt;
 }
 
+void* BioMedicalDataIO::getData()
+{
+    return m_Data;
+}
+void BioMedicalDataIO::setData(void *p)
+{
+    m_Data = p;
+}
+
 int BioMedicalDataIO::readData(string filename)
 {
     inputFileName.assign(filename);
@@ -250,11 +259,11 @@ int BioMedicalDataIO::readData(string filename)
             }
             tif.read();
 
-            dimx = tif.getDimx();
-            dimy = tif.getDimy();
-            dimz = tif.getDimz();
-            dimc = tif.getDimc();
-            dimt = tif.getDimt();
+            dimx = tif.getDimX();
+            dimy = tif.getDimY();
+            dimz = tif.getDimZ();
+            dimc = tif.getDimC();
+            dimt = tif.getDimT();
 
             m_DataType = (DataType)tif.getDataType();
 
@@ -273,11 +282,11 @@ int BioMedicalDataIO::readData(string filename)
             }
             nii.read();
 
-            dimx = nii.getDimx();
-            dimy = nii.getDimy();
-            dimz = nii.getDimz();
-            dimc = nii.getDimc();
-            dimt = nii.getDimt();
+            dimx = nii.getDimX();
+            dimy = nii.getDimY();
+            dimz = nii.getDimZ();
+            dimc = nii.getDimC();
+            dimt = nii.getDimT();
 
             m_DataType = (DataType)nii.getDataType();
 
@@ -1814,19 +1823,19 @@ int NiftiIO::read()
         //this->SetDimensions(5, this->m_NiftiImage->nv);
         //this->SetSpacing(5, this->m_NiftiImage->dv);
     case 5:
-        this->setDimc(this->m_NiftiImage->nu);
+        this->setDimC(this->m_NiftiImage->nu);
         this->resc = this->m_NiftiImage->du;
     case 4:
-        this->setDimt(this->m_NiftiImage->nt);
+        this->setDimT(this->m_NiftiImage->nt);
         this->rest = this->m_NiftiImage->dt * timingscale;
     case 3:
-        this->setDimz(this->m_NiftiImage->nz);
+        this->setDimZ(this->m_NiftiImage->nz);
         this->resz = this->m_NiftiImage->dz * spacingscale;
     case 2:
-        this->setDimy(this->m_NiftiImage->ny);
+        this->setDimY(this->m_NiftiImage->ny);
         this->resy = this->m_NiftiImage->dy * spacingscale;
     case 1:
-        this->setDimx(this->m_NiftiImage->nx);
+        this->setDimX(this->m_NiftiImage->nx);
         this->resx = this->m_NiftiImage->dx * spacingscale;
         break;
     default:

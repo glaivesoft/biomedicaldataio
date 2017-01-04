@@ -20,8 +20,8 @@ FIND_PATH(NIfTI_INCLUDE_DIR
     PATHS ${NIfTI_SEARCHPATH}
     DOC "The NIfTI include directory")
 
-FIND_LIBRARY(NIfTI_LIBRARIES
-    NAMES libniftiio libznz
+FIND_LIBRARY(NIfTI_LIBRARY
+    NAMES niftiio libniftiio
     PATHS
     /usr/lib
     /usr/local/lib
@@ -31,7 +31,22 @@ FIND_LIBRARY(NIfTI_LIBRARIES
     /opt/local/lib
     /opt/lib64
     /opt/local/lib64
-    DOC "The NIfTI libraries")
+    DOC "The NIfTI library")
+
+FIND_LIBRARY(Z_LIBRARY
+    NAMES znz libznz
+    PATHS
+    /usr/lib
+    /usr/local/lib
+    /usr/lib64
+    /usr/local/lib64
+    /opt/lib
+    /opt/local/lib
+    /opt/lib64
+    /opt/local/lib64
+    DOC "The Z library")
+
+SET(NIfTI_LIBRARIES ${NIfTI_LIBRARY} ${Z_LIBRARY})
 
 IF(NIfTI_INCLUDE_DIR AND NIfTI_LIBRARIES)
     SET(NIfTI_FOUND TRUE)

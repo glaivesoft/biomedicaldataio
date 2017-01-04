@@ -2,6 +2,9 @@
 #
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+# The default is OFF
+OPTION ( BUILD_SHARED_LIBS "Toggle building shared libraries")
+
 # sources
 SET( biomedicaldataio_sources
 
@@ -38,6 +41,21 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O3" CACHE STRING "CXX Compiler Flags" FORCE)
 SET(CMAKE_MACOSX_RPATH 1)
 ENDIF()
 
+
+IF (BUILD_SHARED_LIBS)
+
+# biomedicaldataio library
+ADD_LIBRARY(biomedicaldataio SHARED ${biomedicaldataio_sources})
+TARGET_LINK_LIBRARIES(biomedicaldataio ${TIFF_LIBRARIES} ${NIfTI_LIBRARIES})
+SET(BioMedicalDataIO_LIBRARY biomedicaldataio CACHE STRING "" FORCE)
+ADD_DEPENDENCIES(biomedicaldataio tiff nifti)
+
+# install
+INSTALL(TARGETS biomedicaldataio LIBRARY DESTINATION lib)
+INSTALL(FILES biomedicaldataio.h DESTINATION include)
+
+ELSE (BUILD_SHARED_LIBS)
+
 # biomedicaldataio library
 ADD_LIBRARY(biomedicaldataio ${biomedicaldataio_sources})
 TARGET_LINK_LIBRARIES(biomedicaldataio ${TIFF_LIBRARIES} ${NIfTI_LIBRARIES})
@@ -47,3 +65,7 @@ ADD_DEPENDENCIES(biomedicaldataio tiff nifti)
 # install
 INSTALL(TARGETS biomedicaldataio ARCHIVE DESTINATION lib)
 INSTALL(FILES biomedicaldataio.h DESTINATION include)
+
+ENDIF (BUILD_SHARED_LIBS)
+
+
