@@ -113,34 +113,48 @@ void y_Debug(T v)
     cout<<" ...\n";
 }
 
-// Quintuplet
+//
+/// Quintuplet
+//
 template <class T>
 class Quintuplet
 {
 public:
-    Quintuplet();
-    Quintuplet(T x, T y, T z, T c, T t);
-    ~Quintuplet();
+    Quintuplet(){}
+    Quintuplet(T x, T y, T z, T c, T t)
+    {
+        setXYZCT(x,y,z,c,t);
+    }
+    ~Quintuplet(){}
 
 public:
-    T getX();
-    T getY();
-    T getZ();
-    T getC();
-    T getT();
-    void setX(T v);
-    void setY(T v);
-    void setZ(T v);
-    void setC(T v);
-    void setT(T v);
-    void setXYZCT(T xx, T yy, T zz, T cc, T tt);
-    T size();
+    T getX(){return x;}
+    T getY(){return y;}
+    T getZ(){return z;}
+    T getC(){return c;}
+    T getT(){return t;}
+    void setX(T v){x = v;}
+    void setY(T v){y = v;}
+    void setZ(T v){z = v;}
+    void setC(T v){c = v;}
+    void setT(T v){t = v;}
+    void setXYZCT(T xx, T yy, T zz, T cc, T tt)
+    {
+        x = xx;
+        y = yy;
+        z = zz;
+        c = cc;
+        t = tt;
+    }
+    T size(){return x*y*z*c*t;}
 
 public:
     T x, y, z, c, t;
 };
 
-//BioMedicalData
+//
+/// BioMedicalData
+//
 class BioMedicalData
 {
 public:
@@ -164,7 +178,9 @@ public:
     DataType dt; // data type
 };
 
-// BioMedicalDataIO
+//
+/// BioMedicalDataIO
+//
 class BioMedicalDataIO
 {
 public:
