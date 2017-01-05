@@ -198,8 +198,8 @@ public:
     void setFileName(char* fileName);
 
     // data
-    BioMedicalData data();
-    void setData(BioMedicalData data);
+    BioMedicalData * data();
+    void setData(BioMedicalData *data);
 
 public:
     string inputFileName,outputFileName;
@@ -209,7 +209,7 @@ public:
 
     char* m_FileName;
 
-    BioMedicalData m_Data;
+    BioMedicalData *m_Data;
 };
 
 #endif // __BioMedicalDataIO_H__

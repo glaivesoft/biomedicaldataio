@@ -20,59 +20,62 @@ BioMedicalData::BioMedicalData()
 
 BioMedicalData::~BioMedicalData()
 {
-    if(dt==UCHAR)
+    if(p)
     {
-        unsigned char *q = (unsigned char *)p;
-        del1dp<unsigned char>(q);
-    }
-    else if(dt==CHAR)
-    {
-        char *q = (char *)p;
-        del1dp<char>(q);
-    }
-    else if(dt==USHORT)
-    {
-        unsigned short *q = (unsigned short *)p;
-        del1dp<unsigned short>(q);
-    }
-    else if(dt==SHORT)
-    {
-        short *q = (short *)p;
-        del1dp<short>(q);
-    }
-    else if(dt==UINT)
-    {
-        unsigned int *q = (unsigned int *)p;
-        del1dp<unsigned int>(q);
-    }
-    else if(dt==INT)
-    {
-        int *q = (int *)p;
-        del1dp<int>(q);
-    }
-    else if(dt==ULONG)
-    {
-        unsigned long *q = (unsigned long *)p;
-        del1dp<unsigned long>(q);
-    }
-    else if(dt==LONG)
-    {
-        long *q = (long *)p;
-        del1dp<long>(q);
-    }
-    else if(dt==FLOAT)
-    {
-        float *q = (float *)p;
-        del1dp<float>(q);
-    }
-    else if(dt==DOUBLE)
-    {
-        double *q = (double *)p;
-        del1dp<double>(q);
-    }
-    else
-    {
-        cout<<"Invalid datatype!\n";
+        if(dt==UCHAR)
+        {
+            unsigned char *q = (unsigned char *)p;
+            del1dp<unsigned char>(q);
+        }
+        else if(dt==CHAR)
+        {
+            char *q = (char *)p;
+            del1dp<char>(q);
+        }
+        else if(dt==USHORT)
+        {
+            unsigned short *q = (unsigned short *)p;
+            del1dp<unsigned short>(q);
+        }
+        else if(dt==SHORT)
+        {
+            short *q = (short *)p;
+            del1dp<short>(q);
+        }
+        else if(dt==UINT)
+        {
+            unsigned int *q = (unsigned int *)p;
+            del1dp<unsigned int>(q);
+        }
+        else if(dt==INT)
+        {
+            int *q = (int *)p;
+            del1dp<int>(q);
+        }
+        else if(dt==ULONG)
+        {
+            unsigned long *q = (unsigned long *)p;
+            del1dp<unsigned long>(q);
+        }
+        else if(dt==LONG)
+        {
+            long *q = (long *)p;
+            del1dp<long>(q);
+        }
+        else if(dt==FLOAT)
+        {
+            float *q = (float *)p;
+            del1dp<float>(q);
+        }
+        else if(dt==DOUBLE)
+        {
+            double *q = (double *)p;
+            del1dp<double>(q);
+        }
+        else
+        {
+            cout<<"Invalid datatype!\n";
+        }
     }
 }
 
@@ -106,6 +109,8 @@ BioMedicalDataIO::BioMedicalDataIO()
 
     m_PixelType = UNKNOWNPIXELTYPE;
     m_FileFormat = UNKNOWNFILEFORMAT;
+
+    m_Data = new BioMedicalData();
 }
 
 BioMedicalDataIO::~BioMedicalDataIO()
@@ -187,12 +192,12 @@ void BioMedicalDataIO::setFileName(char* fileName)
     return;
 }
 
-BioMedicalData BioMedicalDataIO::data()
+BioMedicalData * BioMedicalDataIO::data()
 {
     return m_Data;
 }
 
-void BioMedicalDataIO::setData(BioMedicalData data)
+void BioMedicalDataIO::setData(BioMedicalData *data)
 {
     m_Data = data;
 }
@@ -249,13 +254,14 @@ int BioMedicalDataIO::writeData(string filename)
 {
     outputFileName.assign(filename);
 
-    if(m_Data.data())
+    if(m_Data->data())
     {
         if(checkFileFormat(const_cast<char *>(filename.c_str())))
         {
             if(m_FileFormat==TIFFFormat)
             {
                 TiffIO tif;
+                tif.setData(m_Data);
 
                 if(!tif.canWriteFile(const_cast<char*>(outputFileName.c_str())))
                 {
@@ -268,6 +274,7 @@ int BioMedicalDataIO::writeData(string filename)
             else if(m_FileFormat==NIFTIFormat)
             {
                 NiftiIO nii;
+                nii.setData(m_Data);
 
                 if(!nii.canWriteFile(const_cast<char*>(outputFileName.c_str())))
                 {
@@ -365,61 +372,61 @@ void TiffIO::changeImageOrder(bool io)
     // BOTLEFT (4) <-> TOPLEFT (1)
     
     //
-    if(m_Data.size.getC()>1)
+    if(m_Data->size.getC()>1)
     {
-        if(m_Data.dataType()==UCHAR)
+        if(m_Data->dataType()==UCHAR)
         {
-            unsigned char *p = (unsigned char *)(m_Data.data());
-            convertImageOrder<unsigned char, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            unsigned char *p = (unsigned char *)(m_Data->data());
+            convertImageOrder<unsigned char, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==CHAR)
+        else if(m_Data->dataType()==CHAR)
         {
-            char *p = (char *)(m_Data.data());
-            convertImageOrder<char, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            char *p = (char *)(m_Data->data());
+            convertImageOrder<char, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==USHORT)
+        else if(m_Data->dataType()==USHORT)
         {
-            unsigned short *p = (unsigned short *)(m_Data.data());
-            convertImageOrder<unsigned short, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            unsigned short *p = (unsigned short *)(m_Data->data());
+            convertImageOrder<unsigned short, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==SHORT)
+        else if(m_Data->dataType()==SHORT)
         {
-            short *p = (short *)(m_Data.data());
-            convertImageOrder<short, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            short *p = (short *)(m_Data->data());
+            convertImageOrder<short, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==UINT)
+        else if(m_Data->dataType()==UINT)
         {
-            unsigned int *p = (unsigned int *)(m_Data.data());
-            convertImageOrder<unsigned int, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            unsigned int *p = (unsigned int *)(m_Data->data());
+            convertImageOrder<unsigned int, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==INT)
+        else if(m_Data->dataType()==INT)
         {
-            int *p = (int *)(m_Data.data());
-            convertImageOrder<int, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            int *p = (int *)(m_Data->data());
+            convertImageOrder<int, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==ULONG)
+        else if(m_Data->dataType()==ULONG)
         {
-            unsigned long *p = (unsigned long *)(m_Data.data());
-            convertImageOrder<unsigned long, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            unsigned long *p = (unsigned long *)(m_Data->data());
+            convertImageOrder<unsigned long, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==LONG)
+        else if(m_Data->dataType()==LONG)
         {
-            long *p = (long *)(m_Data.data());
-            convertImageOrder<long, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            long *p = (long *)(m_Data->data());
+            convertImageOrder<long, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==FLOAT)
+        else if(m_Data->dataType()==FLOAT)
         {
-            float *p = (float *)(m_Data.data());
-            convertImageOrder<float, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            float *p = (float *)(m_Data->data());
+            convertImageOrder<float, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
-        else if(m_Data.dataType()==DOUBLE)
+        else if(m_Data->dataType()==DOUBLE)
         {
-            double *p = (double *)(m_Data.data());
-            convertImageOrder<double, long>(p, m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(), io);
+            double *p = (double *)(m_Data->data());
+            convertImageOrder<double, long>(p, m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(), io);
         }
         else
         {
-            cout<<"Invalid datatype."<<m_Data.dataType()<<endl;
+            cout<<"Invalid datatype."<<m_Data->dataType()<<endl;
             return;
         }
     }
@@ -628,42 +635,42 @@ bool TiffIO::canReadFile(char *fileNameToRead)
     {
         if ( m_SAMPLEFORMAT == 2 ) // SAMPLEFORMAT_INT = 2
         {
-            m_Data.setDataType(CHAR);
+            m_Data->setDataType(CHAR);
         }
         else // SAMPLEFORMAT_UINT = 1
         {
-            m_Data.setDataType(UCHAR);
+            m_Data->setDataType(UCHAR);
         }
     }
     else if ( bitspersample == 32 )
     {
         if ( m_SAMPLEFORMAT == 3 ) // SAMPLEFORMAT_IEEEFP = 3
         {
-            m_Data.setDataType(FLOAT);
+            m_Data->setDataType(FLOAT);
         }
     }
     else
     {
         if ( m_SAMPLEFORMAT == 2 )
         {
-            m_Data.setDataType(SHORT);
+            m_Data->setDataType(SHORT);
         }
         else
         {
-            m_Data.setDataType(USHORT);
+            m_Data->setDataType(USHORT);
         }
     }
     
     // dimensions
-    m_Data.size.setX(width); // x
-    m_Data.size.setY(length); // y
+    m_Data->size.setX(width); // x
+    m_Data->size.setY(length); // y
     
     if(bTiled)
     {
         m_NumberOfTiles = TIFFNumberOfTiles(tif);
         if ( this->m_NumberOfTiles > 1 )
         {
-            m_Data.size.setZ(m_NumberOfPages); // (m_NumberOfTiles*tilewidth*tilelength)/(width*length);
+            m_Data->size.setZ(m_NumberOfPages); // (m_NumberOfTiles*tilewidth*tilelength)/(width*length);
         }
     }
     else
@@ -672,11 +679,11 @@ bool TiffIO::canReadFile(char *fileNameToRead)
         {
             if ( m_SubFiles > 0 )
             {
-                m_Data.size.setZ(m_SubFiles);
+                m_Data->size.setZ(m_SubFiles);
             }
             else
             {
-                m_Data.size.setZ(m_NumberOfPages - m_IgnoredSubFiles);
+                m_Data->size.setZ(m_NumberOfPages - m_IgnoredSubFiles);
             }
         }
     }
@@ -685,25 +692,25 @@ bool TiffIO::canReadFile(char *fileNameToRead)
     {
     case PHOTOMETRIC_RGB:
     case PHOTOMETRIC_YCBCR:
-        m_Data.size.setC(samplesperpixel);
+        m_Data->size.setC(samplesperpixel);
         break;
     case PHOTOMETRIC_MINISWHITE:
     case PHOTOMETRIC_MINISBLACK:
-        m_Data.size.setC(1);
+        m_Data->size.setC(1);
         break;
     case PHOTOMETRIC_PALETTE:
         for (unsigned short cc = 0; cc < 256; cc++ )
         {
             if ( (colormapR+cc) != (colormapG+cc) || (colormapR+cc) != (colormapB+cc) )
             {
-                m_Data.size.setC(3);
+                m_Data->size.setC(3);
                 break;
             }
         }
-        m_Data.size.setC(1);
+        m_Data->size.setC(1);
         break;
     default:
-        m_Data.size.setC(4);
+        m_Data->size.setC(4);
     }
     
     // spacing
@@ -711,13 +718,13 @@ bool TiffIO::canReadFile(char *fileNameToRead)
     {
         if ( m_RESOLUTIONUNIT == 2 ) // inches
         {
-            m_Data.spacing.setX(25.4 / m_XRESOLUTION);
-            m_Data.spacing.setY(25.4 / m_YRESOLUTION);
+            m_Data->spacing.setX(25.4 / m_XRESOLUTION);
+            m_Data->spacing.setY(25.4 / m_YRESOLUTION);
         }
         else if ( m_RESOLUTIONUNIT == 3 ) // cm
         {
-            m_Data.spacing.setX(10.0 / m_XRESOLUTION);
-            m_Data.spacing.setY(10.0 / m_YRESOLUTION);
+            m_Data->spacing.setX(10.0 / m_XRESOLUTION);
+            m_Data->spacing.setY(10.0 / m_YRESOLUTION);
         }
     }
     
@@ -743,17 +750,8 @@ int TiffIO::read()
     }
     
     tsize_t scanlinesize = TIFFRasterScanlineSize(m_TiffImage);
-    long bytes = (long)scanlinesize * (long)length*m_Data.size.getZ()*m_Data.size.getC()*m_Data.size.getT();
-    
-    try
-    {
-        m_Data.p = malloc(bytes);
-    }
-    catch (...)
-    {
-        cout<<"Fail to allocate memory for image buffer"<<endl;
-        return -2;
-    }
+    long bytes = (long)scanlinesize * (long)length*m_Data->size.getZ()*m_Data->size.getC()*m_Data->size.getT();
+    new1dp< unsigned char, unsigned long >((unsigned char*&)(m_Data->p), bytes);
     
     //tsize_t scanlinesize = TIFFScanlineSize(m_TiffImage);
     if (!scanlinesize)
@@ -768,10 +766,10 @@ int TiffIO::read()
     
     if(irps==rowsperstrip) bychunk = 1;
     
-    for(uint32 z=0; z<m_Data.size.getZ(); z++)
+    for(uint32 z=0; z<m_Data->size.getZ(); z++)
     {
         // tif image [x,y,c,z,t]
-        uint8* bufp = (uint8*) (m_Data.data()) + z*m_Data.size.getX()*m_Data.size.getY()*m_Data.size.getC()*bitspersample/8;
+        uint8* bufp = (uint8*) (m_Data->data()) + z*m_Data->size.getX()*m_Data->size.getY()*m_Data->size.getC()*bitspersample/8;
         
         if ( m_IgnoredSubFiles > 0 )
         {
@@ -1073,7 +1071,7 @@ bool TiffIO::canWriteFile(char *fileNameToWrite)
     const char *mode;
     mode = "w";
     
-    long totalpixels = m_Data.size.size();
+    long totalpixels = m_Data->size.size();
     
     const long oneKiloByte = 1024;
     const long oneMegaByte = 1024 * oneKiloByte;
@@ -1113,7 +1111,7 @@ int TiffIO::write()
     }
     TIFF* tif = (TIFF*)m_TiffImage;
     
-    if(!m_Data.data() || m_Data.size.getX()<1 || m_Data.size.getY()<1 || m_Data.size.getZ()<1 || m_Data.size.getC()<1 || m_Data.size.getT()<1 || m_Data.dataType()<1)
+    if(!m_Data->data() || m_Data->size.getX()<1 || m_Data->size.getY()<1 || m_Data->size.getZ()<1 || m_Data->size.getC()<1 || m_Data->size.getT()<1 || m_Data->dataType()<1)
     {
         cout<<"Invalid data for output!"<<endl;
         return -2;
@@ -1127,13 +1125,13 @@ int TiffIO::write()
     //
     uint32 page;
     
-    uint32 width =  m_Data.size.getX();
-    uint32 height = m_Data.size.getY();
-    uint32 pages = m_Data.size.getZ();
-    uint32 scomponents = m_Data.size.getC();
+    uint32 width =  m_Data->size.getX();
+    uint32 height = m_Data->size.getY();
+    uint32 pages = m_Data->size.getZ();
+    uint32 scomponents = m_Data->size.getC();
     uint32 rowsperstrip = ( uint32 ) - 1;
     
-    switch ( m_Data.dataType() )
+    switch ( m_Data->dataType() )
     {
     case UCHAR:
         bitspersample = 8;
@@ -1165,12 +1163,12 @@ int TiffIO::write()
     uint32 w = width;
     uint32 h = height;
     
-    if ( m_Data.size.getZ() > 1 )
+    if ( m_Data->size.getZ() > 1 )
     {
         TIFFCreateDirectory(tif);
     }
     
-    char *p = (char *)(m_Data.data());
+    char *p = (char *)(m_Data->data());
     for ( page = 0; page < pages; page++ )
     {
         TIFFSetDirectory(tif, page);
@@ -1181,7 +1179,7 @@ int TiffIO::write()
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, bitspersample);
         TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
         
-        switch (m_Data.dataType()) {
+        switch (m_Data->dataType()) {
         case UCHAR:
         case USHORT:
             TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
@@ -1262,24 +1260,24 @@ int TiffIO::write()
         TIFFSetField( tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, rowsperstrip) );
         
         // spacing
-        if ( m_Data.spacing.getX() > 0 && m_Data.spacing.getY() > 0 )
+        if ( m_Data->spacing.getX() > 0 && m_Data->spacing.getY() > 0 )
         {
-            m_XRESOLUTION = m_Data.spacing.getX() / 0.254;
-            m_YRESOLUTION = m_Data.spacing.getY() / 0.254;
+            m_XRESOLUTION = m_Data->spacing.getX() / 0.254;
+            m_YRESOLUTION = m_Data->spacing.getY() / 0.254;
             
             TIFFSetField(tif, TIFFTAG_XRESOLUTION, m_XRESOLUTION);
             TIFFSetField(tif, TIFFTAG_YRESOLUTION, m_YRESOLUTION);
             TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
         }
         
-        if ( m_Data.size.getZ() > 1 )
+        if ( m_Data->size.getZ() > 1 )
         {
             TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
             TIFFSetField(tif, TIFFTAG_PAGENUMBER, page, pages);
         }
         int rowLength; // in bytes
         
-        switch ( m_Data.dataType() )
+        switch ( m_Data->dataType() )
         {
         case UCHAR:
             rowLength = sizeof( unsigned char );
@@ -1302,7 +1300,7 @@ int TiffIO::write()
             return -1;
         }
         
-        rowLength *= m_Data.size.getC();
+        rowLength *= m_Data->size.getC();
         rowLength *= width;
         
         int row = 0;
@@ -1317,7 +1315,7 @@ int TiffIO::write()
             row++;
         }
         
-        if ( m_Data.size.getZ() > 1)
+        if ( m_Data->size.getZ() > 1)
         {
             TIFFWriteDirectory(tif);
         }
@@ -1447,7 +1445,7 @@ int NiftiIO::read()
 
     if ( this->m_NiftiImage->intent_code == NIFTI_INTENT_VECTOR || this->m_NiftiImage->intent_code == NIFTI_INTENT_SYMMATRIX )
     {
-        m_Data.size.setC(this->m_NiftiImage->dim[5]);
+        m_Data->size.setC(this->m_NiftiImage->dim[5]);
 
         if(this->m_NiftiImage->dim[5] > 1)
         {
@@ -1492,7 +1490,7 @@ int NiftiIO::read()
               floatdim-- )
         {}
         dims = floatdim;
-        m_Data.size.setC(1);
+        m_Data->size.setC(1);
     }
 
     cout<<"dims ... "<<dims<<" dimt ... "<<this->m_NiftiImage->nt<<endl;
@@ -1500,56 +1498,56 @@ int NiftiIO::read()
     switch ( this->m_NiftiImage->datatype )
     {
     case NIFTI_TYPE_INT8:
-        this->m_Data.setDataType(CHAR);
+        this->m_Data->setDataType(CHAR);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_UINT8:
-        this->m_Data.setDataType(UCHAR);
+        this->m_Data->setDataType(UCHAR);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_INT16:
-        this->m_Data.setDataType(SHORT);
+        this->m_Data->setDataType(SHORT);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_UINT16:
-        this->m_Data.setDataType(USHORT);
+        this->m_Data->setDataType(USHORT);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_INT32:
-        this->m_Data.setDataType(INT);
+        this->m_Data->setDataType(INT);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_UINT32:
-        this->m_Data.setDataType(UINT);
+        this->m_Data->setDataType(UINT);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_FLOAT32:
-        this->m_Data.setDataType(FLOAT);
+        this->m_Data->setDataType(FLOAT);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_FLOAT64:
-        this->m_Data.setDataType(DOUBLE);
+        this->m_Data->setDataType(DOUBLE);
         this->m_PixelType = SCALAR;
         break;
     case NIFTI_TYPE_COMPLEX64:
-        this->m_Data.setDataType(FLOAT);
+        this->m_Data->setDataType(FLOAT);
         this->m_PixelType = COMPLEX;
-        m_Data.size.setC(2);
+        m_Data->size.setC(2);
         break;
     case NIFTI_TYPE_COMPLEX128:
-        this->m_Data.setDataType(DOUBLE);
+        this->m_Data->setDataType(DOUBLE);
         this->m_PixelType = COMPLEX;
-        m_Data.size.setC(2);
+        m_Data->size.setC(2);
         break;
     case NIFTI_TYPE_RGB24:
-        this->m_Data.setDataType(UCHAR);
+        this->m_Data->setDataType(UCHAR);
         this->m_PixelType = RGB;
-        m_Data.size.setC(3);
+        m_Data->size.setC(3);
         break;
     case NIFTI_TYPE_RGBA32:
-        this->m_Data.setDataType(UCHAR);
+        this->m_Data->setDataType(UCHAR);
         this->m_PixelType = RGBA;
-        m_Data.size.setC(4);
+        m_Data->size.setC(4);
         break;
     default:
         break;
@@ -1662,16 +1660,16 @@ int NiftiIO::read()
     // to ImageFileReader to float
     if ( this->mustRescale() )
     {
-        if ( this->m_Data.dataType() == CHAR
-             || this->m_Data.dataType() == UCHAR
-             || this->m_Data.dataType() == SHORT
-             || this->m_Data.dataType() == USHORT
-             || this->m_Data.dataType() == INT
-             || this->m_Data.dataType() == UINT
-             || this->m_Data.dataType() == LONG
-             || this->m_Data.dataType() == ULONG )
+        if ( this->m_Data->dataType() == CHAR
+             || this->m_Data->dataType() == UCHAR
+             || this->m_Data->dataType() == SHORT
+             || this->m_Data->dataType() == USHORT
+             || this->m_Data->dataType() == INT
+             || this->m_Data->dataType() == UINT
+             || this->m_Data->dataType() == LONG
+             || this->m_Data->dataType() == ULONG )
         {
-            this->m_Data.setDataType(FLOAT);
+            this->m_Data->setDataType(FLOAT);
         }
     }
     //
@@ -1713,68 +1711,61 @@ int NiftiIO::read()
         //this->SetDimensions(5, this->m_NiftiImage->nv);
         //this->SetSpacing(5, this->m_NiftiImage->dv);
     case 5:
-        m_Data.size.setC(this->m_NiftiImage->nu);
-        m_Data.spacing.setC(this->m_NiftiImage->du);
+        m_Data->size.setC(this->m_NiftiImage->nu);
+        m_Data->spacing.setC(this->m_NiftiImage->du);
     case 4:
-        m_Data.size.setT(this->m_NiftiImage->nt);
-        m_Data.spacing.setT(this->m_NiftiImage->dt * timingscale);
+        m_Data->size.setT(this->m_NiftiImage->nt);
+        m_Data->spacing.setT(this->m_NiftiImage->dt * timingscale);
     case 3:
-        m_Data.size.setZ(this->m_NiftiImage->nz);
-        m_Data.spacing.setZ(this->m_NiftiImage->dz * spacingscale);
+        m_Data->size.setZ(this->m_NiftiImage->nz);
+        m_Data->spacing.setZ(this->m_NiftiImage->dz * spacingscale);
     case 2:
-        m_Data.size.setY(this->m_NiftiImage->ny);
-        m_Data.spacing.setY(this->m_NiftiImage->dy * spacingscale);
+        m_Data->size.setY(this->m_NiftiImage->ny);
+        m_Data->spacing.setY(this->m_NiftiImage->dy * spacingscale);
     case 1:
-        m_Data.size.setX(this->m_NiftiImage->nx);
-        m_Data.spacing.setX(this->m_NiftiImage->dx * spacingscale);
+        m_Data->size.setX(this->m_NiftiImage->nx);
+        m_Data->spacing.setX(this->m_NiftiImage->dx * spacingscale);
         break;
     default:
         cout << this->getFileName() << " has " << dims << " dimensions, and is not supported or invalid!" <<endl;
         return -1;
     }
 
-    // dims = m_NiftiImage->dim[0];
-    // dimx = m_NiftiImage->dim[1] = m_NiftiImage->nx;
-    // dimy = m_NiftiImage->dim[2] = m_NiftiImage->ny;
-    // dimz = m_NiftiImage->dim[3] = m_NiftiImage->nz;
-    // dimt = m_NiftiImage->dim[4] = m_NiftiImage->nt;
-    // dimc = m_NiftiImage->dim[5] = m_NiftiImage->nu; // vector
-
     //
     unsigned long pixelSize = this->m_NiftiImage->nbyper;
-    unsigned long imSize = m_Data.size.size();
+    unsigned long imSize = m_Data->size.size();
 
-    switch ( this->m_Data.dataType() )
+    switch ( this->m_Data->dataType() )
     {
     case CHAR:
-        new1dp< char, unsigned long >((char*&)(m_Data.p), imSize);
+        new1dp< char, unsigned long >((char*&)(m_Data->p), imSize);
         break;
     case UCHAR:
-        new1dp< unsigned char, unsigned long >((unsigned char*&)(m_Data.p), imSize);
+        new1dp< unsigned char, unsigned long >((unsigned char*&)(m_Data->p), imSize);
         break;
     case SHORT:
-        new1dp< short, unsigned long >((short*&)(m_Data.p), imSize);
+        new1dp< short, unsigned long >((short*&)(m_Data->p), imSize);
         break;
     case USHORT:
-        new1dp< unsigned short, unsigned long >((unsigned short*&)(m_Data.p), imSize);
+        new1dp< unsigned short, unsigned long >((unsigned short*&)(m_Data->p), imSize);
         break;
     case INT:
-        new1dp< int, unsigned long >((int*&)(m_Data.p), imSize);
+        new1dp< int, unsigned long >((int*&)(m_Data->p), imSize);
         break;
     case UINT:
-        new1dp< unsigned int, unsigned long >((unsigned int*&)(m_Data.p), imSize);
+        new1dp< unsigned int, unsigned long >((unsigned int*&)(m_Data->p), imSize);
         break;
     case LONG:
-        new1dp< long, unsigned long >((long*&)(m_Data.p), imSize);
+        new1dp< long, unsigned long >((long*&)(m_Data->p), imSize);
         break;
     case ULONG:
-        new1dp< unsigned long, unsigned long >((unsigned long*&)(m_Data.p), imSize);
+        new1dp< unsigned long, unsigned long >((unsigned long*&)(m_Data->p), imSize);
         break;
     case FLOAT:
-        new1dp< float, unsigned long >((float*&)(m_Data.p), imSize);
+        new1dp< float, unsigned long >((float*&)(m_Data->p), imSize);
         break;
     case DOUBLE:
-        new1dp< double, unsigned long >((double*&)(m_Data.p), imSize);
+        new1dp< double, unsigned long >((double*&)(m_Data->p), imSize);
         break;
     case UNKNOWNDATATYPE:
         cout << "Bad OnDiskComponentType UNKNOWNDATATYPE" <<endl;
@@ -1783,26 +1774,26 @@ int NiftiIO::read()
 
     //
     const char *       niftibuf = reinterpret_cast<const char *>(this->m_NiftiImage->data);
-    char *             p = (char *)(m_Data.p);
+    char *             p = (char *)(m_Data->p);
 
-    const long rowdist = m_Data.size.getX();
-    const long slicedist = rowdist * m_Data.size.getY();
-    const long volumedist = slicedist * m_Data.size.getZ();
-    const long seriesdist = volumedist * m_Data.size.getT();
+    const long rowdist = m_Data->size.getX();
+    const long slicedist = rowdist * m_Data->size.getY();
+    const long volumedist = slicedist * m_Data->size.getZ();
+    const long seriesdist = volumedist * m_Data->size.getT();
     long t,z,y,x,c;
 
-    for ( t = 0; t < m_Data.size.getT(); t++ )
+    for ( t = 0; t < m_Data->size.getT(); t++ )
     {
-        for ( z = 0; z < m_Data.size.getZ(); z++ )
+        for ( z = 0; z < m_Data->size.getZ(); z++ )
         {
-            for ( y = 0; y < m_Data.size.getY(); y++ )
+            for ( y = 0; y < m_Data->size.getY(); y++ )
             {
-                for ( x = 0; x < m_Data.size.getX(); x++ )
+                for ( x = 0; x < m_Data->size.getX(); x++ )
                 {
-                    for ( c = 0; c < m_Data.size.getC(); c++ )
+                    for ( c = 0; c < m_Data->size.getC(); c++ )
                     {
                         const long nifti_index = ( c * seriesdist + volumedist * t + slicedist * z + rowdist * y + x ) * pixelSize;
-                        const long index =( ( t * volumedist * m_Data.size.getC()  + volumedist * c + slicedist * z + rowdist * y + x )  ) * pixelSize;
+                        const long index =( ( t * volumedist * m_Data->size.getC()  + volumedist * c + slicedist * z + rowdist * y + x )  ) * pixelSize;
 
                         memcpy(p + index, niftibuf + nifti_index, pixelSize);
                     }
@@ -1834,8 +1825,8 @@ bool NiftiIO::canWriteFile(char *fileNameToWrite)
 
 int NiftiIO::write()
 {
-    return write(m_Data.data(), m_Data.size.getX(), m_Data.size.getY(), m_Data.size.getZ(), m_Data.size.getC(),
-                 m_Data.size.getT(), m_Data.dataType(), m_Data.spacing.getX(), m_Data.spacing.getY(), m_Data.spacing.getZ());
+    return write(m_Data->data(), m_Data->size.getX(), m_Data->size.getY(), m_Data->size.getZ(), m_Data->size.getC(),
+                 m_Data->size.getT(), m_Data->dataType(), m_Data->spacing.getX(), m_Data->spacing.getY(), m_Data->spacing.getZ());
 }
 
 int NiftiIO::write(const void *buffer, long sx, long sy, long sz, long sc, long st, int datatype, float vx, float vy, float vz)
@@ -1917,7 +1908,7 @@ int NiftiIO::write(const void *buffer, long sx, long sy, long sz, long sc, long 
         this->m_NiftiImage->ndim = 1;
     }
 
-    cout<<" ndim ... "<<this->m_NiftiImage->ndim<<endl;
+    //cout<<" ndim ... "<<this->m_NiftiImage->ndim<<endl;
 
     //
     switch ( datatype )
