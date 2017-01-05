@@ -14,7 +14,7 @@ size: x,y,z,c,t
 ```
 
 ## Release 0.1
-The release 0.1 supports [LibTIFF][], [NIfTI][], and RAW file formats.
+The release 0.1 supports [LibTIFF][](.tif), [NIfTI][](.nii, .nii.gz), and RAW (.raw) file formats. RAW can be your customized file format that need come with a pain text file or command line parameters explaining the image's meta information, for example, the image size, voxelsize, saving order, etc.
 
 An example of usage of biomedicaldataio can be found in the file test/imageReadWrite.
 
