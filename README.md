@@ -19,6 +19,7 @@ The release 0.1 supports [LibTIFF][], [NIfTI][], and RAW file formats.
 An example of usage of biomedicaldataio can be found in the file test/imageReadWrite.
 
 ```
+...
     // read
     BioMedicalDataIO bmData;
 
@@ -29,7 +30,8 @@ An example of usage of biomedicaldataio can be found in the file test/imageReadW
     }
 
     // write
-    return bmData.writeData(output);
+    bmData.writeData(output);
+...
 ```
 
 ##
