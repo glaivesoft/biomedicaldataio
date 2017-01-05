@@ -1,5 +1,6 @@
-// test biomedicaldataio
-// imageReadWrite <input> <output>
+// example for using biomedicaldataio
+// developed by Yang Yu (gnayuy@gmail.com)
+// Usage: imageReadWrite <input> <output>
 
 #include "biomedicaldataio.h"
 
