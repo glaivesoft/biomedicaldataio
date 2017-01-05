@@ -5,11 +5,13 @@ Follow the Occam's razor principle, here we design a simple biomedical data stru
 
 ### data structure
 
+```
 1D pointer + meta
 
 meta: origin + spacing + size
 
 size: x,y,z,c,t
+```
 
 ## Release 0.1
 The release 0.1 supports [LibTIFF][], [NIfTI][], and RAW file formats.
