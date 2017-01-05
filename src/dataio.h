@@ -204,7 +204,7 @@ public:
     // writing
     bool canWriteFile(char *fileNameToWrite);
     int write();
-    int write(const void *buffer, long sx, long sy, long sz, long sc, long st, int datatype, float srx, float sry, float srz);
+    int write(const void *buffer, long sx, long sy, long sz, long sc, long st, int datatype, float vx, float vy, float vz);
 
     // compressed ?
     int isCompressed(const char * filename);

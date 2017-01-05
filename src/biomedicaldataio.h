@@ -93,6 +93,7 @@ void new1dp(T *&p, Tidx n)
     try
     {
         p = new T [n];
+        memset(p, 0, n);
     }
     catch(...)
     {
@@ -112,7 +113,58 @@ void y_Debug(T v)
     cout<<" ...\n";
 }
 
-// BioMedicalDataIO class
+// Quintuplet
+template <class T>
+class Quintuplet
+{
+public:
+    Quintuplet();
+    Quintuplet(T x, T y, T z, T c, T t);
+    ~Quintuplet();
+
+public:
+    T getX();
+    T getY();
+    T getZ();
+    T getC();
+    T getT();
+    void setX(T v);
+    void setY(T v);
+    void setZ(T v);
+    void setC(T v);
+    void setT(T v);
+    void setXYZCT(T xx, T yy, T zz, T cc, T tt);
+    T size();
+
+public:
+    T x, y, z, c, t;
+};
+
+//BioMedicalData
+class BioMedicalData
+{
+public:
+    BioMedicalData();
+    ~BioMedicalData();
+
+public:
+    // data
+    void * data();
+    void setData(void *data);
+
+    // datatype
+    DataType dataType();
+    void setDataType(DataType type);
+
+public:
+    void *p; // 1d data pointer
+    Quintuplet<float> origin; // origin (offset)
+    Quintuplet<float> spacing; // voxelsize (spacing)
+    Quintuplet<long> size; // size XYZCT (dimension)
+    DataType dt; // data type
+};
+
+// BioMedicalDataIO
 class BioMedicalDataIO
 {
 public:
@@ -129,48 +181,19 @@ public:
     char* getFileName();
     void setFileName(char* fileName);
 
-    // dimensions
-    long getDimX();
-    long getDimY();
-    long getDimZ();
-    long getDimC();
-    long getDimT();
-
-    void setDimX(long x);
-    void setDimY(long y);
-    void setDimZ(long z);
-    void setDimC(long c);
-    void setDimT(long t);
-
-    // resolutions
-    float getResX();
-    float getResY();
-    float getResZ();
-
-    void setResX(float resolution_x);
-    void setResY(float resolution_y);
-    void setResZ(float resolution_z);
-
-    // datatype
-    int getDataType();
-    void setDataType(int dt);
-
     // data
-    void* getData();
-    void setData(void *p);
+    BioMedicalData data();
+    void setData(BioMedicalData data);
 
 public:
     string inputFileName,outputFileName;
 
     IOFileFormat m_FileFormat;
-    DataType m_DataType;
     IOPixelType m_PixelType;
 
-    long dimx, dimy, dimz, dimc, dimt; // dimensions
-    float resx, resy, resz, resc, rest; // spacing
-
-    void *m_Data;
     char* m_FileName;
+
+    BioMedicalData m_Data;
 };
 
 #endif // __BioMedicalDataIO_H__
