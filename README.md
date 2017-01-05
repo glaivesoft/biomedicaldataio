@@ -21,16 +21,16 @@ An example of usage of biomedicaldataio can be found in the file test/imageReadW
 ```
 ...
     // read
-    BioMedicalDataIO bmData;
+    BioMedicalDataIO bmDataIO;
 
-    if(bmData.readData(input)!=0)
+    if(bmDataIO.readData(input)!=0)
     {
         cout<<"Fail to read data!"<<endl;
         return -1;
     }
 
     // write
-    bmData.writeData(output);
+    bmDataIO.writeData(output);
 ...
 ```
 
