@@ -16,14 +16,14 @@ int main(int argc, char *argv[])
     string output(argv[2]);
 
     // read
-    BioMedicalDataIO bmdata;
+    BioMedicalDataIO bmDataIO;
 
-    if(bmdata.readData(input)!=0)
+    if(bmDataIO.readData(input)!=0)
     {
         cout<<"Fail to read data!"<<endl;
         return -1;
     }
 
     // write
-    return bmdata.writeData(output);
+    return bmDataIO.writeData(output);
 }
