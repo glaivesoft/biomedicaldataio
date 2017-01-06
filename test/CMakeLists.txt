@@ -2,6 +2,9 @@
 #
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+#
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src")
+
 # sources
 SET( imageReadWrite_sources
 

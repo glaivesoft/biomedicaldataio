@@ -48,7 +48,6 @@ IF (BUILD_SHARED_LIBS)
 ADD_LIBRARY(biomedicaldataio SHARED ${biomedicaldataio_sources})
 TARGET_LINK_LIBRARIES(biomedicaldataio ${TIFF_LIBRARIES} ${NIfTI_LIBRARIES})
 SET(BioMedicalDataIO_LIBRARY biomedicaldataio CACHE STRING "" FORCE)
-ADD_DEPENDENCIES(biomedicaldataio tiff nifti)
 
 # install
 INSTALL(TARGETS biomedicaldataio LIBRARY DESTINATION lib)
@@ -60,7 +59,6 @@ ELSE (BUILD_SHARED_LIBS)
 ADD_LIBRARY(biomedicaldataio ${biomedicaldataio_sources})
 TARGET_LINK_LIBRARIES(biomedicaldataio ${TIFF_LIBRARIES} ${NIfTI_LIBRARIES})
 SET(BioMedicalDataIO_LIBRARY biomedicaldataio CACHE STRING "" FORCE)
-ADD_DEPENDENCIES(biomedicaldataio tiff nifti)
 
 # install
 INSTALL(TARGETS biomedicaldataio ARCHIVE DESTINATION lib)
