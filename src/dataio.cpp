@@ -5,6 +5,30 @@
 #include "dataio.h"
 
 //
+/// Timer
+//
+Timer::Timer()
+{
+}
+
+Timer::~Timer()
+{
+}
+
+void Timer::start()
+{
+    gettimeofday(&m_startTime, NULL);
+}
+
+double Timer::getEclipseTime()
+{
+    gettimeofday(&m_endTime, NULL);
+    double diff = m_endTime.tv_sec - m_startTime.tv_sec + double (m_endTime.tv_usec - m_startTime.tv_usec) / 1000000;
+
+    return diff;
+}
+
+//
 /// BioMedicalData
 //
 BioMedicalData::BioMedicalData()

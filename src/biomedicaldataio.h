@@ -24,6 +24,7 @@
 #include <limits>
 #include <complex>
 #include <float.h>
+#include <sys/time.h>
 //#include <codecvt>
 using namespace std;
 
@@ -210,6 +211,23 @@ public:
     char* m_FileName;
 
     BioMedicalData *m_Data;
+};
+
+//
+/// Timer
+//
+class Timer
+{
+public:
+    Timer();
+    ~Timer();
+
+public:
+    void start();
+    double getEclipseTime();
+
+private:
+    struct timeval m_startTime, m_endTime;
 };
 
 #endif // __BioMedicalDataIO_H__
