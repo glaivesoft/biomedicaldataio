@@ -18,11 +18,6 @@ extern "C" {
 };
 
 //
-#ifdef Use_OpenMP
-#include <omp.h>
-#endif
-
-//
 template <class Tdata, class Tidx>
 int convertImageOrder(Tdata *&p, Tidx dimx, Tidx dimy, Tidx dimz, Tidx dimc, bool cxyz2xyzc)
 {

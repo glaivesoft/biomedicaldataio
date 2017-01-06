@@ -29,6 +29,11 @@
 using namespace std;
 
 //
+#ifdef Use_OpenMP
+#include <omp.h>
+#endif
+
+//
 #ifndef INF
 #define INF 1E10
 #endif
@@ -113,6 +118,92 @@ void y_Debug(T v)
     cout<<v;
     cout<<" ...\n";
 }
+
+//
+/// Timer
+//
+class Timer
+{
+public:
+    Timer();
+    ~Timer();
+
+public:
+    void start();
+    double getEclipseTime();
+
+private:
+    struct timeval m_startTime, m_endTime;
+};
+
+//
+/// Tuplet
+//
+template <class T>
+class Tuplet
+{
+public:
+    Tuplet(){}
+    Tuplet(T x, T y, T z)
+    {
+        setXYZ(x,y,z);
+    }
+    ~Tuplet(){}
+
+public:
+    T getX(){return x;}
+    T getY(){return y;}
+    T getZ(){return z;}
+    void setX(T v){x = v;}
+    void setY(T v){y = v;}
+    void setZ(T v){z = v;}
+    void setXYZ(T xx, T yy, T zz)
+    {
+        x = xx;
+        y = yy;
+        z = zz;
+    }
+    T size(){return x*y*z;}
+
+public:
+    T x, y, z;
+};
+
+//
+/// Quadruplet
+//
+template <class T>
+class Quadruplet
+{
+public:
+    Quadruplet(){}
+    Quadruplet(T x, T y, T z, T c)
+    {
+        setXYZC(x,y,z,c);
+    }
+    ~Quadruplet(){}
+
+public:
+    T getX(){return x;}
+    T getY(){return y;}
+    T getZ(){return z;}
+    T getC(){return c;}
+    void setX(T v){x = v;}
+    void setY(T v){y = v;}
+    void setZ(T v){z = v;}
+    void setC(T v){c = v;}
+    void setXYZC(T xx, T yy, T zz, T cc)
+    {
+        x = xx;
+        y = yy;
+        z = zz;
+        c = cc;
+    }
+    T size(){return x*y*z*c;}
+
+public:
+    T x, y, z, c;
+};
 
 //
 /// Quintuplet
@@ -211,23 +302,6 @@ public:
     char* m_FileName;
 
     BioMedicalData *m_Data;
-};
-
-//
-/// Timer
-//
-class Timer
-{
-public:
-    Timer();
-    ~Timer();
-
-public:
-    void start();
-    double getEclipseTime();
-
-private:
-    struct timeval m_startTime, m_endTime;
 };
 
 #endif // __BioMedicalDataIO_H__
