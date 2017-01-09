@@ -113,6 +113,21 @@ void BioMedicalData::setData(void *data)
     p = data;
 }
 
+int BioMedicalData::newData(long bytes)
+{
+    try
+    {
+        p = malloc(bytes);
+    }
+    catch(...)
+    {
+        cout<<"Fail to allocate memory for the biomedical data."<<endl;
+        return -1;
+    }
+
+    return 0;
+}
+
 DataType BioMedicalData::dataType()
 {
     return dt;
