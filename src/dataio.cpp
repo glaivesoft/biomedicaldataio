@@ -44,7 +44,7 @@ BioMedicalData::BioMedicalData()
 
 BioMedicalData::~BioMedicalData()
 {
-    clearData();
+    clear();
 }
 
 void * BioMedicalData::data()
@@ -57,11 +57,12 @@ void BioMedicalData::setData(void *data)
     p = data;
 }
 
-int BioMedicalData::newData(long bytes)
+int BioMedicalData::zeros(long bytes)
 {
     try
     {
         p = malloc(bytes);
+        memset(p, 0, bytes);
     }
     catch(...)
     {
@@ -72,7 +73,7 @@ int BioMedicalData::newData(long bytes)
     return 0;
 }
 
-void BioMedicalData::clearData()
+void BioMedicalData::clear()
 {
     if(p)
     {
