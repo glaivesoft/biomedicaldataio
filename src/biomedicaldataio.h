@@ -258,6 +258,7 @@ public:
     void * data();
     void setData(void *data);
     int newData(long bytes);
+    void clearData();
 
     // datatype
     DataType dataType();

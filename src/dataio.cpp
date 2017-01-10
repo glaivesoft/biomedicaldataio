@@ -44,6 +44,36 @@ BioMedicalData::BioMedicalData()
 
 BioMedicalData::~BioMedicalData()
 {
+    clearData();
+}
+
+void * BioMedicalData::data()
+{
+    return p;
+}
+
+void BioMedicalData::setData(void *data)
+{
+    p = data;
+}
+
+int BioMedicalData::newData(long bytes)
+{
+    try
+    {
+        p = malloc(bytes);
+    }
+    catch(...)
+    {
+        cout<<"Fail to allocate memory for the biomedical data."<<endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+void BioMedicalData::clearData()
+{
     if(p)
     {
         if(dt==UCHAR)
@@ -98,34 +128,9 @@ BioMedicalData::~BioMedicalData()
         }
         else
         {
-            cout<<"Invalid datatype!\n";
+            cout<<"Invalid datatype: "<<dt<<endl;
         }
     }
-}
-
-void * BioMedicalData::data()
-{
-    return p;
-}
-
-void BioMedicalData::setData(void *data)
-{
-    p = data;
-}
-
-int BioMedicalData::newData(long bytes)
-{
-    try
-    {
-        p = malloc(bytes);
-    }
-    catch(...)
-    {
-        cout<<"Fail to allocate memory for the biomedical data."<<endl;
-        return -1;
-    }
-
-    return 0;
 }
 
 DataType BioMedicalData::dataType()
