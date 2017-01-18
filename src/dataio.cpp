@@ -336,6 +336,18 @@ int BioMedicalDataIO::readData(string filename)
             nii.read();
             setData(nii.m_Data);
         }
+        else if(m_FileFormat==RAWFormat)
+        {
+            RawIO raw;
+
+            if(!raw.canReadFile(const_cast<char*>(inputFileName.c_str())))
+            {
+                cout<<"Fail to read raw image."<<endl;
+                return -2;
+            }
+            raw.read();
+            setData(raw.m_Data);
+        }
         else
         {
             cout<<"Unsupported Data Formats."<<endl;
@@ -379,6 +391,18 @@ int BioMedicalDataIO::writeData(string filename)
                     return -2;
                 }
                 nii.write();
+            }
+            else if(m_FileFormat==RAWFormat)
+            {
+                RawIO raw;
+                raw.setData(m_Data);
+
+                if(!raw.canWriteFile(const_cast<char*>(outputFileName.c_str())))
+                {
+                    cout<<"Fail to write raw image."<<endl;
+                    return -2;
+                }
+                raw.write();
             }
             else
             {
