@@ -13,7 +13,7 @@ meta: origin + spacing + size
     `<id>`
     size: x,y,z,c,t
 ```
-
+`<id>`
 ## Release 0.1.0 (1/19/2017)
 The release 0.1.0 supports [LibTIFF][](.tif), [NIfTI][](.nii, .nii.gz), and RAW (.raw) file formats. RAW can be your customized file format that need come with a pain text file or command line parameters explaining the image's meta information, for example, the image size, voxelsize, saving order, etc.
 
