@@ -40,7 +40,7 @@ Init a new empty data:
 
 ```
 BioMedicalData *bmData = new BioMedicalData();
-bmData->zeros(bytes); // bytes = bmData->size.size();
+bmData->zeros(bytes); // bytes = bmData->size.size() * sizeof(datatype);
 bmData->origin.setXYZCT(ox,oy,oz,oc,ot);
 bmData->spacing.setXYZCT(vx,vy,vz,vc,vt);
 bmData->size.setXYZCT(sx,sy,sz,sc,st);
