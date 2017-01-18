@@ -10,7 +10,8 @@ Follow the Occam's razor principle, here we design a simple biomedical data stru
 
 meta: origin + spacing + size
 
-size: x,y,z,c,t
+    `<id>`
+    size: x,y,z,c,t
 ```
 
 ## Release 0.1.0 (1/19/2017)
