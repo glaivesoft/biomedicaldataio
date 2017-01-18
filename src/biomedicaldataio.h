@@ -244,6 +244,9 @@ public:
     T x, y, z, c, t;
 };
 
+typedef Quintuplet<float> FQuintuplet;
+typedef Quintuplet<long> LQuintuplet;
+
 //
 /// BioMedicalData
 //
@@ -267,9 +270,9 @@ public:
 
 public:
     void *p; // 1d data pointer
-    Quintuplet<float> origin; // origin (offset)
-    Quintuplet<float> spacing; // voxelsize (spacing)
-    Quintuplet<long> size; // size XYZCT (dimension)
+    FQuintuplet origin; // origin (offset)
+    FQuintuplet spacing; // voxelsize (spacing)
+    LQuintuplet size; // size XYZCT (dimension)
     DataType dt; // data type
 };
 

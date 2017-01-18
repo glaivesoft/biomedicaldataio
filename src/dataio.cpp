@@ -2126,3 +2126,123 @@ int NiftiIO::write(const void *buffer, long sx, long sy, long sz, long sc, long 
     //
     return 0;
 }
+
+//
+/// RawIO
+//
+RawIO::RawIO()
+{
+    m_FileName = NULL;
+    inputFileName.clear();
+    outputFileName.clear();
+
+    m_PixelType = UNKNOWNPIXELTYPE;
+    m_FileFormat = UNKNOWNFILEFORMAT;
+
+    m_Data = new BioMedicalData();
+}
+
+RawIO::~RawIO()
+{
+
+}
+
+bool RawIO::canReadFile(char *fileNameToRead)
+{
+    // note: the raw file's header need to be set outside this function
+
+    //
+    setFileName(fileNameToRead);
+
+    //
+    ifstream fin(m_FileName);
+
+    if(fin.is_open())
+    {
+        fin.close();
+    }
+    else
+    {
+        cout << "Fail to open the file "<< m_FileName << endl;
+        return false;
+    }
+
+    //
+    return true;
+}
+
+int RawIO::read()
+{
+    ifstream fin(m_FileName);
+
+    if(fin.is_open())
+    {
+        //
+        if(!fin.read ((char*)(m_Data->data()), m_Data->bytes()))
+        {
+            cout<<"Fail to read data."<<endl;
+            fin.close();
+            return -1;
+        }
+
+        //
+        fin.close();
+    }
+    else
+    {
+        cout << "Fail to open the file "<< m_FileName << endl;
+        return -2;
+    }
+
+    //
+    return 0;
+}
+
+bool RawIO::canWriteFile(char *fileNameToWrite)
+{
+    //
+    setFileName(fileNameToWrite);
+
+    //
+    ofstream fout(m_FileName);
+
+    if(fout.is_open())
+    {
+        fout.close();
+    }
+    else
+    {
+        cout << "Fail to open the file "<< m_FileName << endl;
+        return false;
+    }
+
+    //
+    return true;
+}
+
+int RawIO::write()
+{
+    ofstream fout(m_FileName);
+
+    if(fout.is_open())
+    {
+        //
+        if(!fout.write ((char*)(m_Data->data()), m_Data->bytes()))
+        {
+            cout<<"Fail to write data."<<endl;
+            fout.close();
+            return -1;
+        }
+
+        //
+        fout.close();
+    }
+    else
+    {
+        cout << "Fail to open the file "<< m_FileName << endl;
+        return -2;
+    }
+
+    //
+    return 0;
+}

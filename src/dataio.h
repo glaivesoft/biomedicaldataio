@@ -220,4 +220,24 @@ private:
     IOPixelType m_PixelType;
 };
 
+// RAW
+class RawIO : public BioMedicalDataIO
+{
+public:
+    RawIO();
+    ~RawIO();
+
+public:
+
+    // reading
+    bool canReadFile(char *fileNameToRead);
+    int read();
+
+    // writing
+    bool canWriteFile(char *fileNameToWrite);
+    int write();
+
+};
+
+
 #endif // __DATAIO_H__
