@@ -144,6 +144,58 @@ void BioMedicalData::setDataType(DataType type)
     dt = type;
 }
 
+long BioMedicalData::bytes()
+{
+    long bytes = size.size();
+
+    //
+    if(dt==UCHAR)
+    {
+    }
+    else if(dt==CHAR)
+    {
+    }
+    else if(dt==USHORT)
+    {
+        bytes *= sizeof(unsigned short);
+    }
+    else if(dt==SHORT)
+    {
+        bytes *= sizeof(short);
+    }
+    else if(dt==UINT)
+    {
+        bytes *= sizeof(unsigned int);
+    }
+    else if(dt==INT)
+    {
+        bytes *= sizeof(int);
+    }
+    else if(dt==ULONG)
+    {
+        bytes *= sizeof(unsigned long);
+    }
+    else if(dt==LONG)
+    {
+        bytes *= sizeof(long);
+    }
+    else if(dt==FLOAT)
+    {
+        bytes *= sizeof(float);
+    }
+    else if(dt==DOUBLE)
+    {
+        bytes *= sizeof(double);
+    }
+    else
+    {
+        cout<<"Invalid datatype: "<<dt<<endl;
+    }
+
+    //
+    return bytes;
+}
+
 //
 /// BioMedicalDataIO
 //

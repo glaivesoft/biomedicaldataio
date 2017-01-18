@@ -258,6 +258,7 @@ public:
     void * data();
     void setData(void *data);
     int zeros(long bytes);
+    long bytes();
     void clear();
 
     // datatype
