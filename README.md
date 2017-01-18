@@ -19,19 +19,32 @@ The release 0.1 supports [LibTIFF][](.tif), [NIfTI][](.nii, .nii.gz), and RAW (.
 An example of usage of biomedicaldataio can be found in the file test/imageReadWrite.
 
 ```
-...
-    // read
-    BioMedicalDataIO bmDataIO;
+// read
+BioMedicalDataIO bmDataIO;
 
-    if(bmDataIO.readData(input)!=0)
-    {
-        cout<<"Fail to read data!"<<endl;
-        return -1;
-    }
+if(bmDataIO.readData(input)!=0){
+    cout<<"Fail to read data!"<<endl;
+    return -1;
+}
 
-    // write
-    bmDataIO.writeData(output);
 ...
+
+// write
+bmDataIO.writeData(output);
+
+```
+
+Init a new empty data:
+
+```
+BioMedicalData *bmData = new BioMedicalData();
+bmData->zeros(bytes); // bytes=bmData->size.size();
+bmData->origin.setXYZCT(x,y,z,c,t);
+bmData->spacing.setXYZCT(x,y,z,c,t);
+bmData->size.setXYZCT(x,y,z,c,t);
+
+BioMedicalDataIO bmDataIO;
+bmDataIO.setData(bmData);
 ```
 
 ##
