@@ -57,10 +57,11 @@ void BioMedicalData::setData(void *data)
     p = data;
 }
 
-int BioMedicalData::zeros(long bytes)
+int BioMedicalData::zeros()
 {
     try
     {
+        long bytes = this->bytes();
         p = malloc(bytes);
         memset(p, 0, bytes);
     }

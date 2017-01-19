@@ -260,7 +260,7 @@ public:
     // data
     void * data();
     void setData(void *data);
-    int zeros(long bytes);
+    int zeros();
     long bytes();
     void clear();
 
