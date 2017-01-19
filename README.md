@@ -44,7 +44,7 @@ bmData->setDataType(datatype);
 bmData->origin.setXYZCT(ox,oy,oz,oc,ot);
 bmData->spacing.setXYZCT(vx,vy,vz,vc,vt);
 bmData->size.setXYZCT(sx,sy,sz,sc,st);
-bmData->zeros(bmData->bytes());
+bmData->zeros();
 
 BioMedicalDataIO bmDataIO;
 bmDataIO.setData(bmData);
