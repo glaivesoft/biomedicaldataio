@@ -238,6 +238,14 @@ public:
         c = cc;
         t = tt;
     }
+    void setSize(Quintuplet<T> size)
+    {
+        x = size.getX();
+        y = size.getY();
+        z = size.getZ();
+        c = size.getC();
+        t = size.getT();
+    }
     T size(){return x*y*z*c*t;}
 
 public:

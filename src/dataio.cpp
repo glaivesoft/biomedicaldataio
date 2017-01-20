@@ -341,8 +341,8 @@ int BioMedicalDataIO::readData(string filename)
         {
             RawIO raw;
 
-            //
-            raw.data()->size = m_Data->size;
+            // set DataType and size from outside
+            raw.data()->size.setSize(m_Data->size);
             raw.data()->setDataType(m_Data->dataType());
 
             //
@@ -2188,7 +2188,13 @@ bool RawIO::canReadFile(char *fileNameToRead)
     ifstream fin(m_FileName);
 
     if(fin.is_open())
-    {
+    {        
+        size_t begin = fin.tellg();
+        fin.seekg (0, ios::end);
+        size_t end = fin.tellg();
+
+        cout << "the size of raw file is: " << (end-begin) << " bytes.\n";
+
         fin.close();
     }
     else
@@ -2207,6 +2213,9 @@ int RawIO::read()
 
     if(fin.is_open())
     {
+        // init
+        m_Data->zeros();
+
         //
         if(!fin.read ((char*)(m_Data->data()), m_Data->bytes()))
         {
