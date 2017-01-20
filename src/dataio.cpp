@@ -341,6 +341,11 @@ int BioMedicalDataIO::readData(string filename)
         {
             RawIO raw;
 
+            //
+            raw.data()->size = m_Data->size;
+            raw.data()->setDataType(m_Data->dataType());
+
+            //
             if(!raw.canReadFile(const_cast<char*>(inputFileName.c_str())))
             {
                 cout<<"Fail to read raw image."<<endl;
