@@ -69,6 +69,9 @@ typedef enum { NoCompression, PackBits, JPEG, Deflate, LZW } CompressionType;
 
 typedef enum { UNKNOWNRAWTYPE, RAW4BYTE, RAW2BYTE } V3DRawType;
 
+typedef enum { UNKNOWNSPACEUNITTYPE, UnitM, UnitMM, UnitUM } SpaceUnitType;
+typedef enum { UNKNOWNTIMEUNITTYPE, UnitSEC, UnitMSEC, UnitUSEC } TimeUnitType;
+
 //
 #define foreach(count, iter) 	\
     for(long iter=0; iter<count; iter++)
@@ -276,12 +279,20 @@ public:
     DataType dataType();
     void setDataType(DataType type);
 
+    // unit
+    void setSpaceUnit(SpaceUnitType unit);
+    SpaceUnitType spaceUnit();
+    void setTimeUnit(TimeUnitType unit);
+    TimeUnitType timeUnit();
+
 public:
     void *p; // 1d data pointer
     FQuintuplet origin; // origin (offset)
     FQuintuplet spacing; // voxelsize (spacing)
     LQuintuplet size; // size XYZCT (dimension)
     DataType dt; // data type
+    SpaceUnitType su;  // space unit
+    TimeUnitType tu; // time unit
 };
 
 //

@@ -33,9 +33,12 @@ double Timer::getEclipseTime()
 //
 BioMedicalData::BioMedicalData()
 {
+    // default settings
     p = NULL;
 
-    dt = UNKNOWNDATATYPE;
+    dt = USHORT; // 16-bit
+    su = UnitUM; // micrometer
+    tu = UnitSEC; // second
 
     origin.setXYZCT(0.0, 0.0, 0.0, 0.0, 0.0);
     spacing.setXYZCT(1.0, 1.0, 1.0, 1.0, 1.0);
@@ -195,6 +198,26 @@ long BioMedicalData::bytes()
 
     //
     return bytes;
+}
+
+void BioMedicalData::setSpaceUnit(SpaceUnitType unit)
+{
+    su = unit;
+}
+
+SpaceUnitType BioMedicalData::spaceUnit()
+{
+    return su;
+}
+
+void BioMedicalData::setTimeUnit(TimeUnitType unit)
+{
+    tu = unit;
+}
+
+TimeUnitType BioMedicalData::timeUnit()
+{
+    return tu;
 }
 
 //
@@ -1805,12 +1828,15 @@ int NiftiIO::read()
     switch ( XYZT_TO_SPACE(this->m_NiftiImage->xyz_units) )
     {
     case NIFTI_UNITS_METER:
+        this->data()->setSpaceUnit(UnitM);
         spacingscale = 1e3;
         break;
     case NIFTI_UNITS_MM:
+        this->data()->setSpaceUnit(UnitMM);
         spacingscale = 1e0;
         break;
     case NIFTI_UNITS_MICRON:
+        this->data()->setSpaceUnit(UnitUM);
         spacingscale = 1e-3;
         break;
     }
@@ -1819,12 +1845,15 @@ int NiftiIO::read()
     switch ( XYZT_TO_TIME(this->m_NiftiImage->xyz_units) )
     {
     case NIFTI_UNITS_SEC:
+        this->data()->setTimeUnit(UnitSEC);
         timingscale = 1.0;
         break;
     case NIFTI_UNITS_MSEC:
+        this->data()->setTimeUnit(UnitMSEC);
         timingscale = 1e-3;
         break;
     case NIFTI_UNITS_USEC:
+        this->data()->setTimeUnit(UnitUSEC);
         timingscale = 1e-6;
         break;
     }
@@ -2035,8 +2064,6 @@ int NiftiIO::write(const void *buffer, long sx, long sy, long sz, long sc, long 
         this->m_NiftiImage->ndim = 1;
     }
 
-    //cout<<" ndim ... "<<this->m_NiftiImage->ndim<<endl;
-
     //
     switch ( datatype )
     {
@@ -2082,11 +2109,22 @@ int NiftiIO::write(const void *buffer, long sx, long sy, long sz, long sc, long 
     this->m_NiftiImage->scl_slope = 1.0f;
     this->m_NiftiImage->scl_inter = 0.0f;
 
-    this->m_NiftiImage->xyz_units = static_cast< int >(NIFTI_UNITS_MICRON | NIFTI_UNITS_SEC);
+    this->m_NiftiImage->xyz_units = static_cast< int >(NIFTI_UNITS_MM | NIFTI_UNITS_SEC);
     this->m_NiftiImage->pixdim[0] = 0;
-    this->m_NiftiImage->pixdim[1] = this->m_NiftiImage->dx = 1e3*vx; // mm by default
-    this->m_NiftiImage->pixdim[2] = this->m_NiftiImage->dy = 1e3*vy; // mm by default
-    this->m_NiftiImage->pixdim[3] = this->m_NiftiImage->dz = 1e3*vz; // mm by default
+
+    if(this->data()->spaceUnit()==UnitUM)
+    {
+        this->m_NiftiImage->pixdim[1] = this->m_NiftiImage->dx = 1e-3*vx;
+        this->m_NiftiImage->pixdim[2] = this->m_NiftiImage->dy = 1e-3*vy;
+        this->m_NiftiImage->pixdim[3] = this->m_NiftiImage->dz = 1e-3*vz;
+    }
+    else
+    {
+        // mm by default
+        this->m_NiftiImage->pixdim[1] = this->m_NiftiImage->dx = vx;
+        this->m_NiftiImage->pixdim[2] = this->m_NiftiImage->dy = vy;
+        this->m_NiftiImage->pixdim[3] = this->m_NiftiImage->dz = vz;
+    }
 
     // data
     unsigned long numVoxels = sx*sy*sz*sc*st;
