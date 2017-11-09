@@ -24,6 +24,8 @@
 #include <limits>
 #include <complex>
 #include <float.h>
+#include <chrono>
+#include <random>
 #include <sys/time.h>
 //#include <codecvt>
 using namespace std;
@@ -62,7 +64,7 @@ typedef enum { UNKNOWNPIXELTYPE, SCALAR, RGB, RGBA, OFFSET, VECTOR,
                POINT, COVARIANTVECTOR, SYMMETRICSECONDRANKTENSOR,
                DIFFUSIONTENSOR3D, COMPLEX, FIXEDARRAY, MATRIX }  IOPixelType;
 
-typedef enum { UNKNOWNFILEFORMAT, TIFFFormat, NIFTIFormat, HDF5Format, RAWFormat, V3DRAWFormat,
+typedef enum { UNKNOWNFILEFORMAT, TIFFFormat, KLBFormat, NIFTIFormat, HDF5Format, RAWFormat, V3DRAWFormat,
                NRRDFormat, CSVFormat, InsightTransformFileFormat, JsonFormat } IOFileFormat;
 
 typedef enum { NoCompression, PackBits, JPEG, Deflate, LZW } CompressionType;

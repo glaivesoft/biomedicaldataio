@@ -284,6 +284,10 @@ bool BioMedicalDataIO::checkFileFormat(char* filename)
     {
         m_FileFormat = NRRDFormat;
     }
+    else if(checkFileExtension(filename, ".klb"))
+    {
+        m_FileFormat = KLBFormat;
+    }
     else
     {
         cout<<"Invalid file format"<<endl;
@@ -348,6 +352,17 @@ int BioMedicalDataIO::readData(string filename)
             tif.read();
             setData(tif.m_Data);
         }
+        else if(m_FileFormat==KLBFormat)
+        {
+            KLBIO klb;
+
+            if(!klb.canReadFile(const_cast<char*>(inputFileName.c_str())))
+            {
+                cout<<"Fail to read KLB image."<<endl;
+                return -2;
+            }
+            setData(klb.m_Data);
+        }
         else if(m_FileFormat==NIFTIFormat)
         {
             NiftiIO nii;
@@ -407,7 +422,17 @@ int BioMedicalDataIO::writeData(string filename)
                     return -2;
                 }
                 tif.write();
+            }
+            else if(m_FileFormat==KLBFormat)
+            {
+                KLBIO klb;
+                klb.setData(m_Data);
 
+                if(!klb.canWriteFile(const_cast<char*>(outputFileName.c_str())))
+                {
+                    cout<<"Fail to write KLB image."<<endl;
+                    return -2;
+                }
             }
             else if(m_FileFormat==NIFTIFormat)
             {
@@ -2196,6 +2221,139 @@ int NiftiIO::write(const void *buffer, long sx, long sy, long sz, long sc, long 
 }
 
 //
+/// KLBIO
+//
+KLBIO::KLBIO()
+{
+    m_FileName = NULL;
+    inputFileName.clear();
+    outputFileName.clear();
+
+    m_PixelType = UNKNOWNPIXELTYPE;
+    m_FileFormat = UNKNOWNFILEFORMAT;
+
+    m_Data = new BioMedicalData();
+
+    compressionType = KLB_COMPRESSION_TYPE::BZIP2;
+
+    numThreads = 8;
+
+    blockSize[0] = 256;
+    blockSize[1] = 256;
+    blockSize[2] = 32;
+    blockSize[3] = 1;
+    blockSize[4] = 1;
+
+    sprintf(metadata, "KLB metadata v1.0");
+}
+
+KLBIO::~KLBIO()
+{
+}
+
+bool KLBIO::canReadFile(char *fileNameToRead)
+{
+    //
+    setFileName(fileNameToRead);
+
+    //
+    klb_imageIO klbimg( m_FileName );
+    int err = klbimg.readHeader();
+    if (err > 0)
+        return false;
+
+    uint64_t N = klbimg.header.getImageSizePixels();
+
+    //
+    switch ( klbimg.header.dataType )
+    {
+    case KLB_DATA_TYPE::UINT8_TYPE:
+        this->m_Data->setDataType(UCHAR);
+        new1dp< unsigned char, unsigned long >((unsigned char*&)(m_Data->p), klbimg.header.getImageSizePixels());
+        break;
+    case KLB_DATA_TYPE::UINT16_TYPE:
+        this->m_Data->setDataType(USHORT);
+        new1dp< unsigned short, unsigned long >((unsigned short*&)(m_Data->p), klbimg.header.getImageSizePixels());
+        break;
+    default:
+        break;
+    }
+
+    //
+    m_Data->size.setX(klbimg.header.xyzct[0]);
+    m_Data->size.setY(klbimg.header.xyzct[1]);
+    m_Data->size.setZ(klbimg.header.xyzct[2]);
+    m_Data->size.setC(klbimg.header.xyzct[3]);
+    m_Data->size.setT(klbimg.header.xyzct[4]);
+
+    //
+    m_Data->spacing.setX(klbimg.header.pixelSize[0]);
+    m_Data->spacing.setY(klbimg.header.pixelSize[1]);
+    m_Data->spacing.setZ(klbimg.header.pixelSize[2]);
+    m_Data->spacing.setC(klbimg.header.pixelSize[3]);
+    m_Data->spacing.setT(klbimg.header.pixelSize[4]);
+
+    //
+    err = klbimg.readImageFull((char*)(m_Data->data()), numThreads);
+    if (err > 0)
+        return false;
+
+    //
+    return true;
+}
+
+bool KLBIO::canWriteFile(char *fileNameToWrite)
+{
+    //
+    setFileName(fileNameToWrite);
+
+    //
+    klb_imageIO klbimg(m_FileName);
+
+    //
+    xyzct[0] = m_Data->size.getX();
+    xyzct[1] = m_Data->size.getY();
+    xyzct[2] = m_Data->size.getZ();
+    xyzct[3] = m_Data->size.getC();
+    xyzct[4] = m_Data->size.getT();
+
+    voxelsize[0] = m_Data->spacing.getX();
+    voxelsize[1] = m_Data->spacing.getY();
+    voxelsize[2] = m_Data->spacing.getZ();
+
+    switch ( m_Data->dataType() )
+    {
+    case UCHAR:
+        this->datatype = KLB_DATA_TYPE::UINT8_TYPE;
+        break;
+    case CHAR:
+        break;
+    case USHORT:
+        this->datatype = KLB_DATA_TYPE::UINT16_TYPE;
+        break;
+    case UNKNOWNDATATYPE:
+    default:
+        cout<< "KLB image only supports unsigned/signed char, unsigned/signed short, and float."<<endl;
+        return -1;
+    }
+
+    //
+    klbimg.header.setHeader(xyzct, datatype, voxelsize, blockSize, compressionType, metadata);
+    memcpy(klbimg.header.xyzct, xyzct, sizeof(uint32_t)* KLB_DATA_DIMS);
+    memcpy(klbimg.header.blockSize, blockSize, sizeof(uint32_t)* KLB_DATA_DIMS);
+    klbimg.header.dataType = datatype;
+    klbimg.header.compressionType = compressionType;
+
+    //
+    int err = klbimg.writeImage((char*)(m_Data->data()), numThreads);
+    if (err > 0)
+        return false;
+
+    //
+    return true;
+}
+
+//
 /// RawIO
 //
 RawIO::RawIO()
@@ -2226,7 +2384,7 @@ bool RawIO::canReadFile(char *fileNameToRead)
     ifstream fin(m_FileName);
 
     if(fin.is_open())
-    {        
+    {
         size_t begin = fin.tellg();
         fin.seekg (0, ios::end);
         size_t end = fin.tellg();

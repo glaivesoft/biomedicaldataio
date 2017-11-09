@@ -14,8 +14,9 @@ extern "C" {
 
 #include "nifti1_io.h"
 #include "znzlib.h"
-
 };
+
+#include "klb_imageIO.h"
 
 //
 template <class Tdata, class Tidx>
@@ -218,6 +219,30 @@ private:
     bool m_LegacyAnalyze75Mode;
 
     IOPixelType m_PixelType;
+};
+
+// KLB
+class KLBIO : public BioMedicalDataIO
+{
+
+public:
+    KLBIO();
+    ~KLBIO();
+
+public:
+    // reading
+    bool canReadFile(char *fileNameToRead);
+
+    // writing
+    bool canWriteFile(char *fileNameToWrite);
+
+private:
+    KLB_COMPRESSION_TYPE compressionType;
+    int numThreads;
+    uint32_t xyzct[KLB_DATA_DIMS], blockSize[KLB_DATA_DIMS];
+    float32_t voxelsize[KLB_DATA_DIMS];
+    KLB_DATA_TYPE datatype;
+    char metadata[KLB_METADATA_SIZE];
 };
 
 // RAW
